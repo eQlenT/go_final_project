@@ -56,7 +56,7 @@ func CheckDB() {
 			fmt.Println(err)
 		}
 
-		if _, err = db.Exec(`CREATE INDEX taks_date ON tasks (date);`); err != nil {
+		if _, err = db.Exec(`CREATE INDEX taks_date ON scheduler (date);`); err != nil {
 			fmt.Println(err)
 
 		}
@@ -377,11 +377,13 @@ func countMonthDay(wantedMonths map[int]bool, now time.Time, dateStart time.Time
 // Делать это можно вызовом всё той же функции NextDate().
 // Поэтому проще сразу вычислить следующую от сегодняшней дату и использовать её, если дата задачи меньше сегодняшней.
 func CheckRequest(r models.Request) error {
-	if len(r.Title) == 0 {
+	if len(r.Title) == 0 || r.Title == "" || r.Title == " " {
 		return fmt.Errorf("не указано название задачи")
 	}
-	if _, err := time.Parse("20060102", r.Date); err != nil {
-		return fmt.Errorf("неверный формат даты")
+	if r.Date != "" || len(r.Date) == 0 {
+		if _, err := time.Parse("20060102", r.Date); err != nil {
+			return fmt.Errorf("неверный формат даты")
+		}
 	}
 	if len(r.Repeat) != 0 || r.Repeat != "" {
 		repeatSlc := strings.Split(r.Repeat, " ")
