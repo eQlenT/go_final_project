@@ -109,57 +109,110 @@ func NextDate(w http.ResponseWriter, r *http.Request) {
 //		fmt.Fprintf(w, `{"id": "%d"}`, lastInsertID)
 //	}
 func AddTask(w http.ResponseWriter, r *http.Request) {
+	var errStr struct {
+		Error string `json:"error"`
+	}
+
 	if r.Method != "POST" {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-		http.Error(w, "request method must be POST", http.StatusBadRequest)
+		errStr.Error = "request method must be POST"
+		http.Error(w, errStr.Error, http.StatusBadRequest)
+		response, err := json.Marshal(errStr)
+		if err != nil {
+			w.Write(response)
+		}
 		return
 	}
 
 	var request models.Request
 	err := json.NewDecoder(r.Body).Decode(&request)
 	if err != nil {
+		errStr.Error = fmt.Sprintf("error decoding request body: %v", err)
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-		http.Error(w, fmt.Sprintf("error decoding request body: %v", err), http.StatusBadRequest)
+		http.Error(w, errStr.Error, http.StatusBadRequest)
+		response, err := json.Marshal(errStr)
+		if err != nil {
+			w.Write(response)
+		}
 		return
 	}
 
 	err = utils.CheckRequest(request)
 	if err != nil {
+		errStr.Error = fmt.Sprintf("error validating request: %v", err)
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-		http.Error(w, fmt.Sprintf("error validating request: %v", err), http.StatusBadRequest)
+		http.Error(w, errStr.Error, http.StatusBadRequest)
+		response, err := json.Marshal(errStr)
+		if err != nil {
+			w.Write(response)
+		}
 		return
 	}
 
 	db, err := sql.Open("sqlite3", "go_final_project/scheduler.db")
 	if err != nil {
+		errStr.Error = fmt.Sprintf("error validating request: %v", err)
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-		http.Error(w, fmt.Sprintf("error opening database: %v", err), http.StatusInternalServerError)
+		http.Error(w, errStr.Error, http.StatusInternalServerError)
+		response, err := json.Marshal(errStr)
+		if err != nil {
+			w.Write(response)
+		}
 		return
 	}
 	defer db.Close()
 
 	nextDate, err := utils.CompleteRequest(request)
 	if err != nil {
+		errStr.Error = fmt.Sprintf("error processing request: %v", err)
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-		http.Error(w, fmt.Sprintf("error processing request: %v", err), http.StatusBadRequest)
+		http.Error(w, errStr.Error, http.StatusBadRequest)
+		response, err := json.Marshal(errStr)
+		if err != nil {
+			w.Write(response)
+		}
 		return
 	}
 
 	res, err := db.Exec("INSERT INTO scheduler (date, title, comment, repeat) VALUES (?, ?, ?, ?)",
 		nextDate, request.Title, request.Comment, request.Repeat)
 	if err != nil {
+		errStr.Error = fmt.Sprintf("error inserting into database: %v", err)
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-		http.Error(w, fmt.Sprintf("error inserting into database: %v", err), http.StatusInternalServerError)
+		http.Error(w, errStr.Error, http.StatusInternalServerError)
+		response, err := json.Marshal(errStr)
+		if err != nil {
+			w.Write(response)
+		}
 		return
 	}
 
 	lastInsertID, err := res.LastInsertId()
 	if err != nil {
+		errStr.Error = fmt.Sprintf("error getting last insert ID: %v", err)
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-		http.Error(w, fmt.Sprintf("error getting last insert ID: %v", err), http.StatusInternalServerError)
+		http.Error(w, errStr.Error, http.StatusInternalServerError)
+		response, err := json.Marshal(errStr)
+		if err != nil {
+			w.Write(response)
+		}
 		return
 	}
-
+	var id struct {
+		ID int64 `json:"id"`
+	}
+	id.ID = lastInsertID
+	response, err := json.Marshal(id)
+	if err != nil {
+		errStr.Error = fmt.Sprintf("error marshaling response: %v", err)
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		http.Error(w, errStr.Error, http.StatusInternalServerError)
+		response, err := json.Marshal(errStr)
+		if err != nil {
+			w.Write(response)
+		}
+		return
+	}
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	fmt.Fprintf(w, `{"id": "%d"}`, lastInsertID)
+	w.Write(response)
 }
