@@ -83,7 +83,7 @@ func CheckPort() string {
 //
 // Функция поддерживает следующие правила повторения:
 // - "d": Ежедневное повторение. Следующая дата вычисляется путем добавления указанного количества дней к текущей дате.
-// - "w": Еженедельное повторение. Следующая дата вычисляется путем добавления указанного количества недель к текущей дате.
+// - "w": Еженедельное повторение. Задача назначается в указанные дни недели, где 1 — понедельник, 7 — воскресенье.
 // - "m": Ежемесячное повторение. Следующая дата вычисляется путем добавления указанного количества месяцев к текущей дате.
 // - "y": Ежегодное повторение. Следующая дата вычисляется путем добавления указанного количества лет к текущей дате.
 //
@@ -380,7 +380,7 @@ func CheckRequest(r models.Request) error {
 	if len(r.Title) == 0 || r.Title == "" || r.Title == " " {
 		return fmt.Errorf("не указано название задачи")
 	}
-	if r.Date != "" || len(r.Date) == 0 {
+	if r.Date != "" {
 		if _, err := time.Parse("20060102", r.Date); err != nil {
 			return fmt.Errorf("неверный формат даты")
 		}
@@ -388,7 +388,7 @@ func CheckRequest(r models.Request) error {
 	if len(r.Repeat) != 0 || r.Repeat != "" {
 		repeatSlc := strings.Split(r.Repeat, " ")
 		rule := repeatSlc[0]
-		if len(repeatSlc) > 3 || rule == "y" && len(repeatSlc) > 1 || rule == "d" && len(repeatSlc) == 1 || rule == "d" && len(repeatSlc) > 2 || rule == "w" && len(repeatSlc) > 2 {
+		if len(repeatSlc) > 3 || rule == "y" && len(repeatSlc) > 1 || rule == "d" && len(repeatSlc) == 1 || rule == "d" && len(repeatSlc) > 2 || rule == "w" && len(repeatSlc) != 2 {
 			return fmt.Errorf("неверный формат repeat")
 		}
 	}
