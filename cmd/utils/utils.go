@@ -134,6 +134,13 @@ func NextDate(now time.Time, date string, repeat string) (string, error) {
 	var resDate time.Time
 	switch rule {
 	case "d":
+		if daysInt[0] == 1 {
+			resDate = dateStart
+			for resDate.Before(time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), 0, 0, 0, 0, time.UTC)) {
+				resDate = resDate.AddDate(0, 0, daysInt[0])
+			}
+			return resDate.Format("20060102"), nil
+		}
 		resDate = dateStart.AddDate(0, 0, daysInt[0])
 		for resDate.Before(now) {
 			resDate = resDate.AddDate(0, 0, daysInt[0])
