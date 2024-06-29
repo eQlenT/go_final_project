@@ -8,6 +8,8 @@ import (
 	"go_final_project/models"
 	"net/http"
 	"time"
+
+	_ "modernc.org/sqlite"
 )
 
 func NextDate(w http.ResponseWriter, r *http.Request) {
@@ -149,7 +151,7 @@ func AddTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	db, err := sql.Open("sqlite3", "go_final_project/scheduler.db")
+	db, err := sql.Open("sqlite", "scheduler.db")
 	if err != nil {
 		errStr.Error = fmt.Sprintf("error validating request: %v", err)
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
