@@ -1,7 +1,7 @@
 package models
 
 type Request struct {
-	Title   string `json:"name"`
+	Title   string `json:"title"`
 	Date    string `json:"date"`
 	Repeat  string `json:"repeat"`
 	Comment string `json:"comment"`

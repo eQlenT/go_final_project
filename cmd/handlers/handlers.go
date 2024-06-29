@@ -114,13 +114,16 @@ func AddTask(w http.ResponseWriter, r *http.Request) {
 	var errStr struct {
 		Error string `json:"error"`
 	}
+	var id struct {
+		ID int64 `json:"id"`
+	}
 
 	if r.Method != "POST" {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		errStr.Error = "request method must be POST"
 		http.Error(w, errStr.Error, http.StatusBadRequest)
 		response, err := json.Marshal(errStr)
-		if err != nil {
+		if err == nil {
 			w.Write(response)
 		}
 		return
@@ -133,7 +136,7 @@ func AddTask(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		http.Error(w, errStr.Error, http.StatusBadRequest)
 		response, err := json.Marshal(errStr)
-		if err != nil {
+		if err == nil {
 			w.Write(response)
 		}
 		return
@@ -145,7 +148,7 @@ func AddTask(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		http.Error(w, errStr.Error, http.StatusBadRequest)
 		response, err := json.Marshal(errStr)
-		if err != nil {
+		if err == nil {
 			w.Write(response)
 		}
 		return
@@ -153,11 +156,11 @@ func AddTask(w http.ResponseWriter, r *http.Request) {
 
 	db, err := sql.Open("sqlite", "scheduler.db")
 	if err != nil {
-		errStr.Error = fmt.Sprintf("error validating request: %v", err)
+		errStr.Error = fmt.Sprintf("error opening DB: %v", err)
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		http.Error(w, errStr.Error, http.StatusInternalServerError)
 		response, err := json.Marshal(errStr)
-		if err != nil {
+		if err == nil {
 			w.Write(response)
 		}
 		return
@@ -170,7 +173,7 @@ func AddTask(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		http.Error(w, errStr.Error, http.StatusBadRequest)
 		response, err := json.Marshal(errStr)
-		if err != nil {
+		if err == nil {
 			w.Write(response)
 		}
 		return
@@ -183,7 +186,7 @@ func AddTask(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		http.Error(w, errStr.Error, http.StatusInternalServerError)
 		response, err := json.Marshal(errStr)
-		if err != nil {
+		if err == nil {
 			w.Write(response)
 		}
 		return
@@ -195,13 +198,10 @@ func AddTask(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		http.Error(w, errStr.Error, http.StatusInternalServerError)
 		response, err := json.Marshal(errStr)
-		if err != nil {
+		if err == nil {
 			w.Write(response)
 		}
 		return
-	}
-	var id struct {
-		ID int64 `json:"id"`
 	}
 	id.ID = lastInsertID
 	response, err := json.Marshal(id)
@@ -210,7 +210,7 @@ func AddTask(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		http.Error(w, errStr.Error, http.StatusInternalServerError)
 		response, err := json.Marshal(errStr)
-		if err != nil {
+		if err == nil {
 			w.Write(response)
 		}
 		return
