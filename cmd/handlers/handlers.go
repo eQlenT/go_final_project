@@ -121,11 +121,7 @@ func AddTask(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		errStr.Error = "request method must be POST"
-		http.Error(w, errStr.Error, http.StatusBadRequest)
-		response, err := json.Marshal(errStr)
-		if err == nil {
-			w.Write(response)
-		}
+		http.Error(w, fmt.Sprintf(`{"error": "%s"}`, errStr.Error), http.StatusBadRequest)
 		return
 	}
 
@@ -134,11 +130,7 @@ func AddTask(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		errStr.Error = fmt.Sprintf("error decoding request body: %v", err)
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-		http.Error(w, errStr.Error, http.StatusBadRequest)
-		response, err := json.Marshal(errStr)
-		if err == nil {
-			w.Write(response)
-		}
+		http.Error(w, fmt.Sprintf(`{"error": "%s"}`, errStr.Error), http.StatusBadRequest)
 		return
 	}
 
@@ -146,11 +138,7 @@ func AddTask(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		errStr.Error = fmt.Sprintf("error validating request: %v", err)
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-		http.Error(w, errStr.Error, http.StatusBadRequest)
-		response, err := json.Marshal(errStr)
-		if err == nil {
-			w.Write(response)
-		}
+		http.Error(w, fmt.Sprintf(`{"error": "%s"}`, errStr.Error), http.StatusBadRequest)
 		return
 	}
 
@@ -158,11 +146,7 @@ func AddTask(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		errStr.Error = fmt.Sprintf("error opening DB: %v", err)
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-		http.Error(w, errStr.Error, http.StatusInternalServerError)
-		response, err := json.Marshal(errStr)
-		if err == nil {
-			w.Write(response)
-		}
+		http.Error(w, fmt.Sprintf(`{"error": "%s"}`, errStr.Error), http.StatusInternalServerError)
 		return
 	}
 	defer db.Close()
@@ -171,11 +155,7 @@ func AddTask(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		errStr.Error = fmt.Sprintf("error processing request: %v", err)
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-		http.Error(w, errStr.Error, http.StatusBadRequest)
-		response, err := json.Marshal(errStr)
-		if err == nil {
-			w.Write(response)
-		}
+		http.Error(w, fmt.Sprintf(`{"error": "%s"}`, errStr.Error), http.StatusBadRequest)
 		return
 	}
 
@@ -184,11 +164,7 @@ func AddTask(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		errStr.Error = fmt.Sprintf("error inserting into database: %v", err)
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-		http.Error(w, errStr.Error, http.StatusInternalServerError)
-		response, err := json.Marshal(errStr)
-		if err == nil {
-			w.Write(response)
-		}
+		http.Error(w, fmt.Sprintf(`{"error": "%s"}`, errStr.Error), http.StatusInternalServerError)
 		return
 	}
 
@@ -196,11 +172,7 @@ func AddTask(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		errStr.Error = fmt.Sprintf("error getting last insert ID: %v", err)
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-		http.Error(w, errStr.Error, http.StatusInternalServerError)
-		response, err := json.Marshal(errStr)
-		if err == nil {
-			w.Write(response)
-		}
+		http.Error(w, fmt.Sprintf(`{"error": "%s"}`, errStr.Error), http.StatusInternalServerError)
 		return
 	}
 	id.ID = lastInsertID
@@ -208,11 +180,7 @@ func AddTask(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		errStr.Error = fmt.Sprintf("error marshaling response: %v", err)
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-		http.Error(w, errStr.Error, http.StatusInternalServerError)
-		response, err := json.Marshal(errStr)
-		if err == nil {
-			w.Write(response)
-		}
+		http.Error(w, fmt.Sprintf(`{"error": "%s"}`, errStr.Error), http.StatusInternalServerError)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
