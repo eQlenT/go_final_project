@@ -147,7 +147,11 @@ func NextDate(now time.Time, date string, repeat string) (string, error) {
 		}
 		return resDate.Format("20060102"), nil
 	case "y":
-		resDate = dateStart.AddDate(1, 0, 0)
+		if dateStart.Before(now) {
+			resDate = dateStart.AddDate(1, 0, 0)
+		} else {
+			resDate = dateStart
+		}
 		for resDate.Before(now) {
 			resDate = resDate.AddDate(1, 0, 0)
 		}
