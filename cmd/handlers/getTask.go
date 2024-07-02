@@ -96,7 +96,7 @@ func GetTask(w http.ResponseWriter, r *http.Request) {
 		tasks = append(tasks, task)
 	}
 	if len(tasks) == 0 {
-		tasks = append(tasks, taskMap{"": ""})
+		tasks = make([]taskMap, 0)
 	}
 
 	slices.SortFunc(tasks, func(a, b taskMap) int {
