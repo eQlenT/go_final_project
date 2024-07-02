@@ -142,6 +142,10 @@ func NextDate(now time.Time, date string, repeat string) (string, error) {
 			return resDate.Format("20060102"), nil
 		}
 	case "d":
+		if dateStart.Equal(now) {
+			resDate = dateStart
+			return resDate.Format("20060102"), nil
+		}
 		if daysInt[0] == 1 {
 			if dateStart == now {
 				resDate = dateStart
