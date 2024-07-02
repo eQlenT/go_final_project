@@ -95,7 +95,7 @@ func TestTasks(t *testing.T) {
 	})
 
 	tasks = getTasks(t, "")
-	assert.Equal(t, len(tasks), 6)
+	assert.Equal(t, 6, len(tasks))
 
 	if !Search {
 		return
