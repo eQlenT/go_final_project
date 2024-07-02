@@ -143,8 +143,12 @@ func NextDate(now time.Time, date string, repeat string) (string, error) {
 		}
 	case "d":
 		if daysInt[0] == 1 {
+			if dateStart == now {
+				resDate = dateStart
+				return resDate.Format("20060102"), nil
+			}
 			resDate = dateStart.AddDate(0, 0, 1)
-			for resDate.Before(time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)) {
+			for resDate.Before(time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.Local)) {
 				resDate = resDate.AddDate(0, 0, daysInt[0])
 			}
 			return resDate.Format("20060102"), nil
@@ -213,7 +217,7 @@ func NextDate(now time.Time, date string, repeat string) (string, error) {
 		resDate = dateStart
 		if len(wantedMonths) == 0 && (dateStart.Before(now) || dateStart == now) {
 			for day := range wantedMonthDays {
-				if time.Date(now.Year(), now.Month(), day, 0, 0, 0, 0, time.UTC).Before(now) {
+				if time.Date(now.Year(), now.Month(), day, 0, 0, 0, 0, time.Local).Before(now) {
 					wantedMonths[int(now.Month())+1] = true
 				}
 			}
@@ -225,7 +229,7 @@ func NextDate(now time.Time, date string, repeat string) (string, error) {
 		if len(wantedMonths) == 0 && now.Before(dateStart) {
 			for day := range wantedMonthDays {
 				var skip bool
-				tempDate := time.Date(dateStart.Year(), dateStart.Month(), day, 0, 0, 0, 0, time.UTC)
+				tempDate := time.Date(dateStart.Year(), dateStart.Month(), day, 0, 0, 0, 0, time.Local)
 				if tempDate.Month() > dateStart.Month() {
 					tempDate = tempDate.AddDate(0, 0, -1)
 					if tempDate.Month() == 3 && dateStart.Month() == 2 {
