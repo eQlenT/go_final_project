@@ -23,6 +23,7 @@ func main() {
 	http.Handle("/", http.FileServer(http.Dir(webDir)))
 	http.HandleFunc("/api/nextdate", handlers.NextDate)
 	http.HandleFunc("/api/task", handlers.AddTask)
+	http.HandleFunc("/api/tasks", handlers.GetTask)
 
 	// Запускаем сервер
 	err := server.ListenAndServe()

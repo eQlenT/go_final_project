@@ -12,21 +12,20 @@ import (
 )
 
 func AddTask(w http.ResponseWriter, r *http.Request) {
-	var errStr struct {
-		Error string `json:"error"`
-	}
+	var errStr models.MyErr
+
 	var id struct {
 		ID int64 `json:"id"`
 	}
 
-	if r.Method != "POST" {
+	if r.Method != http.MethodPost {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		errStr.Error = "request method must be POST"
 		http.Error(w, fmt.Sprintf(`{"error": "%s"}`, errStr.Error), http.StatusBadRequest)
 		return
 	}
 
-	var request models.Request
+	var request models.Task
 	err := json.NewDecoder(r.Body).Decode(&request)
 	if err != nil {
 		errStr.Error = fmt.Sprintf("error decoding request body: %v", err)

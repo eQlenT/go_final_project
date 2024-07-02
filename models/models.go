@@ -1,10 +1,15 @@
 package models
 
-type Request struct {
+type Task struct {
+	ID      int    `json:"id,omitempty"`
 	Title   string `json:"title"`
 	Date    string `json:"date"`
 	Repeat  string `json:"repeat"`
 	Comment string `json:"comment"`
+}
+
+type MyErr struct {
+	Error string `json:"error"`
 }
 
 // Если поле date не указано или содержит пустую строку, берётся сегодняшнее число.

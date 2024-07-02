@@ -387,7 +387,7 @@ func countMonthDay(wantedMonths map[int]bool, now time.Time, dateStart time.Time
 // На самом деле, если правило повторения указано, его нужно проверить в любом случае.
 // Делать это можно вызовом всё той же функции NextDate().
 // Поэтому проще сразу вычислить следующую от сегодняшней дату и использовать её, если дата задачи меньше сегодняшней.
-func CheckRequest(r models.Request) error {
+func CheckRequest(r models.Task) error {
 	if len(r.Title) == 0 || r.Title == "" || r.Title == " " {
 		return fmt.Errorf("не указано название задачи")
 	}
@@ -414,7 +414,7 @@ func CheckRequest(r models.Request) error {
 // На самом деле, если правило повторения указано, его нужно проверить в любом случае.
 // Делать это можно вызовом всё той же функции NextDate().
 // Поэтому проще сразу вычислить следующую от сегодняшней дату и использовать её, если дата задачи меньше сегодняшней.
-func CompleteRequest(r models.Request) (string, error) {
+func CompleteRequest(r models.Task) (string, error) {
 	var nextDate string
 	// Если поле date не указано или содержит пустую строку, берётся сегодняшнее число.
 	if r.Date == "" || len(r.Date) == 0 {
