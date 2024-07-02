@@ -7,25 +7,18 @@
 package handlers
 
 import (
-	"cmp"
 	"database/sql"
 	"encoding/json"
 	"fmt"
 	"go_final_project/models"
 	"net/http"
-	"slices"
-	"strconv"
 
 	_ "modernc.org/sqlite"
 )
 
 func GetTask(w http.ResponseWriter, r *http.Request) {
 	var errStr models.MyErr
-	type taskMap map[string]string
-	var response struct {
-		Tasks []taskMap `json:"tasks"`
-	}
-	tasks := make([]taskMap, 0, 50)
+	tasks := make(map[string][]models.Task)
 
 	if r.Method != http.MethodGet {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
@@ -43,70 +36,32 @@ func GetTask(w http.ResponseWriter, r *http.Request) {
 	}
 	defer db.Close()
 
-	rows, err := db.Query("SELECT * FROM scheduler")
+	rows, err := db.Query(`SELECT id, date, title, comment, repeat FROM scheduler 
+	ORDER BY date LIMIT 50`)
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		errStr.Error = fmt.Sprint(err)
 		http.Error(w, fmt.Sprintf(`{"error": "%s"}`, errStr.Error), http.StatusInternalServerError)
 		return
 	}
+	defer rows.Close()
+
 	for rows.Next() {
-		var (
-			task    taskMap
-			id      int
-			title   string
-			date    string
-			repeat  string
-			comment string
-		)
-		/*
-			m := make(map[string]string)
-			m["id"] = "2"
-			m["title"] = "complete project"
-			m["date"] = "20240703"
-			m["repeat"] = ""
-			m["comment"] = ""
-			fmt.Println(m)
-
-			// convert map to json
-			jsonString, _ := json.Marshal(m)
-			fmt.Println(string(jsonString))
-
-			// convert json to struct
-			s := Task{}
-			json.Unmarshal(jsonString, &s)
-			fmt.Println(s)
-		*/
-
-		err := rows.Scan(&id, &date, &title, &comment, &repeat)
+		task := models.Task{}
+		err := rows.Scan(&task.ID, &task.Date, &task.Title, &task.Comment, &task.Repeat)
 		if err != nil {
 			w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 			errStr.Error = fmt.Sprint(err)
 			http.Error(w, fmt.Sprintf(`{"error": "%s"}`, errStr.Error), http.StatusBadRequest)
 			return
 		}
-		idString := strconv.Itoa(id)
-		task = taskMap{
-			"id":      idString,
-			"date":    date,
-			"title":   title,
-			"comment": comment,
-			"repeat":  repeat,
-		}
-		tasks = append(tasks, task)
+		tasks["tasks"] = append(tasks["tasks"], task)
 	}
-	if len(tasks) == 0 {
-		tasks = make([]taskMap, 0)
+	if tasks["tasks"] == nil {
+		tasks["tasks"] = []models.Task{}
 	}
 
-	slices.SortFunc(tasks, func(a, b taskMap) int {
-		if n := cmp.Compare(a["date"], b["date"]); n != 0 {
-			return n
-		}
-		return 0
-	})
-	response.Tasks = tasks
-	tasksJSON, err := json.Marshal(response)
+	response, err := json.Marshal(tasks)
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		errStr.Error = fmt.Sprint(err)
@@ -115,5 +70,5 @@ func GetTask(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.Write(tasksJSON)
+	w.Write(response)
 }
