@@ -135,7 +135,7 @@ func NextDate(now time.Time, date string, repeat string) (string, error) {
 	switch rule {
 	case "":
 		if dateStart.Before(now) {
-			resDate = time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), 0, 0, 0, 0, time.UTC)
+			resDate = time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
 			return resDate.Format("20060102"), nil
 		} else {
 			resDate = dateStart
@@ -144,7 +144,7 @@ func NextDate(now time.Time, date string, repeat string) (string, error) {
 	case "d":
 		if daysInt[0] == 1 {
 			resDate = dateStart
-			for resDate.Before(time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), 0, 0, 0, 0, time.UTC)) {
+			for resDate.Before(time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)) {
 				resDate = resDate.AddDate(0, 0, daysInt[0])
 			}
 			return resDate.Format("20060102"), nil
@@ -155,11 +155,7 @@ func NextDate(now time.Time, date string, repeat string) (string, error) {
 		}
 		return resDate.Format("20060102"), nil
 	case "y":
-		if dateStart.Before(now) {
-			resDate = dateStart.AddDate(1, 0, 0)
-		} else {
-			resDate = dateStart
-		}
+		resDate = dateStart.AddDate(1, 0, 0)
 		for resDate.Before(now) {
 			resDate = resDate.AddDate(1, 0, 0)
 		}
