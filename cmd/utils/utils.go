@@ -143,7 +143,7 @@ func NextDate(now time.Time, date string, repeat string) (string, error) {
 		}
 	case "d":
 		if daysInt[0] == 1 {
-			resDate = dateStart
+			resDate = dateStart.AddDate(0, 0, 1)
 			for resDate.Before(time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)) {
 				resDate = resDate.AddDate(0, 0, daysInt[0])
 			}
