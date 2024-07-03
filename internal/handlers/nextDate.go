@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"fmt"
-	"go_final_project/cmd/utils"
+	"go_final_project/internal/utils"
 	"net/http"
 	"time"
 )

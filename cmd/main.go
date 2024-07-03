@@ -1,8 +1,8 @@
 package main
 
 import (
-	"go_final_project/cmd/handlers"
-	"go_final_project/cmd/utils"
+	"go_final_project/internal/handlers"
+	"go_final_project/internal/utils"
 	"net/http"
 
 	_ "modernc.org/sqlite"

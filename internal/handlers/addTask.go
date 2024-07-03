@@ -4,8 +4,8 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"go_final_project/cmd/utils"
-	"go_final_project/models"
+	"go_final_project/internal/models"
+	"go_final_project/internal/utils"
 	"net/http"
 
 	_ "modernc.org/sqlite"

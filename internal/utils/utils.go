@@ -3,7 +3,7 @@ package utils
 import (
 	"database/sql"
 	"fmt"
-	"go_final_project/models"
+	"go_final_project/internal/models"
 	"log"
 	"os"
 	"path/filepath"

@@ -10,7 +10,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"go_final_project/models"
+	"go_final_project/internal/models"
 	"net/http"
 
 	_ "modernc.org/sqlite"
