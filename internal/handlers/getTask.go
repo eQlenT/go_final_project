@@ -9,8 +9,8 @@ package handlers
 import (
 	"database/sql"
 	"encoding/json"
-	"fmt"
 	"go_final_project/internal/models"
+	"go_final_project/internal/utils"
 	"net/http"
 
 	_ "modernc.org/sqlite"
@@ -21,35 +21,31 @@ func GetTask(w http.ResponseWriter, r *http.Request) {
 
 	db, err := sql.Open("sqlite", "scheduler.db")
 	if err != nil {
-		fmt.Println("open db")
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		utils.SendErr(w, err, http.StatusInternalServerError)
+		return
 	}
 	defer db.Close()
 
 	rows, err := db.Query(`SELECT id, date, title, comment, repeat FROM scheduler 
 	ORDER BY date`)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		utils.SendErr(w, err, http.StatusInternalServerError)
 		return
 	}
 	defer rows.Close()
 
 	for rows.Next() {
 		task := models.Task{}
-
 		err := rows.Scan(&task.ID, &task.Date, &task.Title, &task.Comment, &task.Repeat)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			utils.SendErr(w, err, http.StatusInternalServerError)
 			return
 		}
-
 		if err := rows.Err(); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			utils.SendErr(w, err, http.StatusInternalServerError)
 			return
 		}
-
 		tasks["tasks"] = append(tasks["tasks"], task)
-
 	}
 
 	// Если задач нет, возвращаем пустой json.
@@ -59,7 +55,7 @@ func GetTask(w http.ResponseWriter, r *http.Request) {
 
 	response, err := json.Marshal(tasks)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		utils.SendErr(w, err, http.StatusInternalServerError)
 		return
 	}
 

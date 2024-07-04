@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"go_final_project/internal/models"
 	"log"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -452,4 +453,9 @@ func CompleteRequest(r models.Task) (string, error) {
 		}
 	}
 	return nextDate, nil
+}
+
+func SendErr(w http.ResponseWriter, err error, status int) {
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	http.Error(w, fmt.Sprintf(`{"error": "%s"}`, err.Error()), status)
 }
