@@ -158,7 +158,8 @@ func NextDate(now time.Time, date string, repeat string) (string, error) {
 			}
 			return resDate.Format("20060102"), nil
 		}
-		resDate = dateStart.AddDate(0, 0, daysInt[0])
+		//resDate = dateStart.AddDate(0, 0, daysInt[0])
+		resDate = dateStart
 		for resDate.Before(now) {
 			resDate = resDate.AddDate(0, 0, daysInt[0])
 		}
