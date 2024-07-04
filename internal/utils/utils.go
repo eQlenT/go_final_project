@@ -391,7 +391,7 @@ func countMonthDay(wantedMonths map[int]bool, now time.Time, dateStart time.Time
 }
 
 // Проверяем наличие всех параметров
-// Поле title обязательное. +++
+// Поле title обязательное.
 // Еще обязательно проверьте, что дата указана в формате 20060102 и что функция time.Parse() корректно её распознаёт.
 // Если поле date не указано или содержит пустую строку, берётся сегодняшнее число.
 // Если дата меньше сегодняшнего числа, есть два варианта:
@@ -402,6 +402,12 @@ func countMonthDay(wantedMonths map[int]bool, now time.Time, dateStart time.Time
 // Делать это можно вызовом всё той же функции NextDate().
 // Поэтому проще сразу вычислить следующую от сегодняшней дату и использовать её, если дата задачи меньше сегодняшней.
 func CheckRequest(r models.Task) error {
+	if r.ID != "" || len(r.ID) != 0 {
+		_, err := strconv.Atoi(r.ID)
+		if err != nil {
+			return err
+		}
+	}
 	if len(r.Title) == 0 || r.Title == "" || r.Title == " " {
 		return fmt.Errorf("не указано название задачи")
 	}

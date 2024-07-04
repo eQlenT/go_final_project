@@ -8,6 +8,7 @@ import (
 	"go_final_project/internal/models"
 	"go_final_project/internal/utils"
 	"net/http"
+	"strconv"
 
 	_ "modernc.org/sqlite"
 )
@@ -37,6 +38,7 @@ func Task(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			utils.SendErr(w, err, http.StatusInternalServerError)
 		}
+		defer rows.Close()
 		for rows.Next() {
 			err = rows.Scan(&task.ID, &task.Date, &task.Title, &task.Comment, &task.Repeat)
 			if err != nil {
@@ -66,9 +68,28 @@ func Task(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		err = utils.CheckRequest(task)
+
 		if err != nil {
 			utils.SendErr(w, err, http.StatusBadRequest)
 			return
+		} else {
+			var rowsCount int
+			row := db.QueryRow(`SELECT COUNT(*) FROM scheduler`)
+			row.Scan(&rowsCount)
+			if err = row.Err(); err != nil {
+				utils.SendErr(w, err, http.StatusInternalServerError)
+				return
+			}
+			givenID, err := strconv.Atoi(task.ID)
+			if err != nil {
+				utils.SendErr(w, err, http.StatusInternalServerError)
+				return
+			}
+			if givenID > rowsCount {
+				err = errors.New("given ID is more than number of rows in DB")
+				utils.SendErr(w, err, http.StatusBadRequest)
+				return
+			}
 		}
 		_, err = db.Exec(`UPDATE scheduler SET date = ?, title = ?, comment = ?, repeat = ? WHERE id = ?`,
 			task.Date, task.Title, task.Comment, task.Repeat, task.ID)
