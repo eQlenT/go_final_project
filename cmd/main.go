@@ -22,8 +22,8 @@ func main() {
 	// Настраиваем маршрутизацию для всех файлов в директории web
 	http.Handle("/", http.FileServer(http.Dir(webDir)))
 	http.HandleFunc("/api/nextdate", handlers.NextDate)
-	http.HandleFunc("/api/task", handlers.AddTask)
-	http.HandleFunc("/api/tasks", handlers.GetTask)
+	http.HandleFunc("/api/task", handlers.Task)
+	http.HandleFunc("/api/tasks", handlers.GetTasks)
 
 	// Запускаем сервер
 	err := server.ListenAndServe()

@@ -17,7 +17,7 @@ import (
 	_ "modernc.org/sqlite"
 )
 
-func GetTask(w http.ResponseWriter, r *http.Request) {
+func GetTasks(w http.ResponseWriter, r *http.Request) {
 	tasks := make(map[string][]models.Task)
 	search := r.FormValue("search")
 	isSearch := search != ""
