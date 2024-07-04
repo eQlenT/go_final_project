@@ -24,7 +24,7 @@ func main() {
 	http.HandleFunc("/api/nextdate", handlers.NextDate)
 	http.HandleFunc("/api/task", handlers.Task)
 	http.HandleFunc("/api/tasks", handlers.GetTasks)
-
+	http.HandleFunc("/api/task/done", handlers.TaskDone)
 	// Запускаем сервер
 	err := server.ListenAndServe()
 	if err != nil {

@@ -245,6 +245,11 @@ func NextDate(now time.Time, date string, repeat string) (string, error) {
 				}
 				if tempDate.Before(dateStart) {
 					wantedMonths[int(dateStart.Month())] = true
+					if daysInt[0] == -1 || daysInt[0] == -2 {
+						for i := 1; i <= 12; i++ {
+							wantedMonths[i] = true
+						}
+					}
 				} else if tempDate.Day() > dateStart.Day() {
 					if skip {
 						wantedMonths[int(dateStart.Month())+1] = true
@@ -255,6 +260,11 @@ func NextDate(now time.Time, date string, repeat string) (string, error) {
 			}
 			if len(wantedMonths) == 0 {
 				wantedMonths[int(dateStart.Month())] = true
+				if daysInt[0] == -1 || daysInt[0] == -2 {
+					for i := 1; i <= 12; i++ {
+						wantedMonths[i] = true
+					}
+				}
 			}
 		}
 
@@ -273,30 +283,6 @@ func NextDate(now time.Time, date string, repeat string) (string, error) {
 	}
 }
 
-// func countMonthDay(wantedMonths map[int]bool, dateStart time.Time, subDays int) int {
-// 	newMap := make(map[int]bool, 12)
-// 	var isFeb bool
-// 	for k, v := range wantedMonths {
-// 		newMap[k] = v
-// 	}
-// 	if len(newMap) == 0 {
-// 		isFeb = dateStart.Month() == time.February
-// 		if subDays == -1 && dateStart.Day() == 31{
-// 			newMap[int(dateStart.Month())+1] = true
-// 		}
-// 	}
-// 	for {
-// 		dateStart = dateStart.AddDate(0, 0, 1)
-// 		if newMap[int(dateStart.Month())] {
-// 			if isFeb && dateStart.Day() == 29 || dateStart.Day() == 28 || dateStart.Day() == 27 {
-// 				dateStart = dateStart.AddDate(0, 1, 0)
-// 			}
-// 			dateStart = dateStart.AddDate(0, 0, subDays)
-// 			return dateStart.Day()
-// 		}
-// 	}
-// }
-
 func countMonthDay(wantedMonths map[int]bool, now time.Time, dateStart time.Time, subDays int, isDateStartBeforeNow bool) int {
 	newMap := make(map[int]bool, 12)
 	for k, v := range wantedMonths {
@@ -307,6 +293,7 @@ func countMonthDay(wantedMonths map[int]bool, now time.Time, dateStart time.Time
 	}
 	var isFeb bool
 	var daysInMonth int
+	var desiredMonth int
 	currentMonth := int(dateStart.Month())
 	isFeb = currentMonth == 2
 	if isFeb && dateStart.Year()%4 == 0 {
@@ -319,14 +306,22 @@ func countMonthDay(wantedMonths map[int]bool, now time.Time, dateStart time.Time
 		} else {
 			daysInMonth = 29
 		}
+	} else if isFeb {
+		daysInMonth = 28
 	}
 	if len(newMap) == 0 {
 		if isFeb {
-			if dateStart.Day() < 27 {
+			if dateStart.Day() <= 27 && daysInMonth == 29 {
 				if subDays == -1 {
 					return daysInMonth
 				} else {
 					return daysInMonth - 1
+				}
+			} else if dateStart.Day() <= 27 && daysInMonth == 28 {
+				if subDays == -1 {
+					return daysInMonth
+				} else {
+					return 30
 				}
 			}
 			if daysInMonth == 29 && dateStart.Day() == 29 {
@@ -355,26 +350,49 @@ func countMonthDay(wantedMonths map[int]bool, now time.Time, dateStart time.Time
 				}
 			}
 		} else if dateStart.Day() < 29 {
+			desiredMonth = currentMonth
 			newMap[currentMonth] = true
-		} else if dateStart.Day() == 30 && dateStart.Day()+1 == 31 {
+		} else if dateStart.Day() == 30 && dateStart.AddDate(0, 0, 1).Day() == 31 {
 			if subDays == -1 {
+				desiredMonth = currentMonth
 				newMap[currentMonth] = true
 			} else {
-				newMap[currentMonth+1] = true
+				desiredMonth = currentMonth + 1
+				if currentMonth == 12 {
+					desiredMonth = 1
+				}
+				newMap[desiredMonth] = true
 			}
+		} else if dateStart.Day() == 30 && dateStart.AddDate(0, 0, 1).Day() == 1 {
+			desiredMonth = currentMonth + 1
+			if currentMonth == 12 {
+				desiredMonth = 1
+			}
+			newMap[desiredMonth] = true
+
 		} else if dateStart.Day() == 31 {
+			desiredMonth = currentMonth + 1
+			if currentMonth == 12 {
+				desiredMonth = 1
+			}
+			newMap[desiredMonth] = true
+		} else if dateStart.Day() == 29 && dateStart.AddDate(0, 0, 2).Day() == 31 {
+			desiredMonth = currentMonth
 			newMap[currentMonth] = true
-		} else if dateStart.Day() == 29 && dateStart.Day()+2 == 31 {
-			newMap[currentMonth] = true
-		} else if dateStart.Day() == 29 && dateStart.Day()+2 == 1 {
+		} else if dateStart.Day() == 29 && dateStart.AddDate(0, 0, 2).Day() == 1 {
 			if subDays == -1 {
+				desiredMonth = currentMonth
 				newMap[currentMonth] = true
 			} else {
-				newMap[currentMonth+1] = true
+				desiredMonth = currentMonth + 1
+				if currentMonth == 12 {
+					desiredMonth = 1
+				}
+				newMap[desiredMonth] = true
 			}
 		}
 	}
-	if dateStart.Month() == time.Month(currentMonth) {
+	if dateStart.Month() == time.Month(desiredMonth) {
 		for newMap[int(dateStart.Month())] {
 			dateStart = dateStart.AddDate(0, 0, 1)
 		}

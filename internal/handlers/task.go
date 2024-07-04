@@ -45,10 +45,10 @@ func Task(w http.ResponseWriter, r *http.Request) {
 				utils.SendErr(w, err, http.StatusInternalServerError)
 				return
 			}
-			if err = rows.Err(); err != nil {
-				utils.SendErr(w, err, http.StatusInternalServerError)
-				return
-			}
+		}
+		if err = rows.Err(); err != nil {
+			utils.SendErr(w, err, http.StatusInternalServerError)
+			return
 		}
 		response, err := json.Marshal(task)
 		if err != nil {
@@ -72,9 +72,9 @@ func Task(w http.ResponseWriter, r *http.Request) {
 			utils.SendErr(w, err, http.StatusBadRequest)
 			return
 		} else {
-			var rowsCount int
-			row := db.QueryRow(`SELECT COUNT(*) FROM scheduler`)
-			row.Scan(&rowsCount)
+			var maxID int
+			row := db.QueryRow(`SELECT MAX(id) FROM scheduler`)
+			row.Scan(&maxID)
 			if err = row.Err(); err != nil {
 				utils.SendErr(w, err, http.StatusInternalServerError)
 				return
@@ -85,7 +85,7 @@ func Task(w http.ResponseWriter, r *http.Request) {
 				utils.SendErr(w, err, http.StatusInternalServerError)
 				return
 			}
-			if givenID > rowsCount {
+			if givenID > maxID {
 				err = errors.New("given ID is more than number of rows in DB")
 				utils.SendErr(w, err, http.StatusBadRequest)
 				return
@@ -142,6 +142,36 @@ func Task(w http.ResponseWriter, r *http.Request) {
 		}
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		w.Write(response)
+	case http.MethodDelete:
+		id := r.FormValue("id")
+		if id == "" {
+			utils.SendErr(w, errors.New("id is empty"), http.StatusBadRequest)
+			return
+		}
+		var maxID int
+		row := db.QueryRow(`SELECT MAX(id) FROM scheduler`)
+		row.Scan(&maxID)
+		if err = row.Err(); err != nil {
+			utils.SendErr(w, err, http.StatusInternalServerError)
+			return
+		}
+		givenID, err := strconv.Atoi(id)
+		if err != nil {
+			err = errors.New("can not parse ID")
+			utils.SendErr(w, err, http.StatusInternalServerError)
+			return
+		}
+		if givenID > maxID {
+			err = errors.New("given ID is more than number of rows in DB")
+			utils.SendErr(w, err, http.StatusBadRequest)
+			return
+		}
+		_, err = db.Exec(`DELETE FROM scheduler WHERE id = ?`, id)
+		if err != nil {
+			utils.SendErr(w, err, http.StatusInternalServerError)
+		}
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		fmt.Fprint(w, "{}")
 	default:
 		err := fmt.Errorf("no request method")
 		utils.SendErr(w, err, http.StatusInternalServerError)

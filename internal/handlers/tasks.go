@@ -51,7 +51,7 @@ func GetTasks(w http.ResponseWriter, r *http.Request) {
 		}
 	} else {
 		rows, err = db.Query(`SELECT id, date, title, comment, repeat FROM scheduler 
-	ORDER BY date`)
+	ORDER BY date LIMIT 25`)
 		if err != nil {
 			utils.SendErr(w, err, http.StatusInternalServerError)
 			return
@@ -66,13 +66,13 @@ func GetTasks(w http.ResponseWriter, r *http.Request) {
 			utils.SendErr(w, err, http.StatusInternalServerError)
 			return
 		}
-		if err := rows.Err(); err != nil {
-			utils.SendErr(w, err, http.StatusInternalServerError)
-			return
-		}
+
 		tasks["tasks"] = append(tasks["tasks"], task)
 	}
-
+	if err := rows.Err(); err != nil {
+		utils.SendErr(w, err, http.StatusInternalServerError)
+		return
+	}
 	// Если задач нет, возвращаем пустой json.
 	if tasks["tasks"] == nil {
 		tasks["tasks"] = []models.Task{}
