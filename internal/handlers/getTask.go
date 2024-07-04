@@ -12,12 +12,15 @@ import (
 	"go_final_project/internal/models"
 	"go_final_project/internal/utils"
 	"net/http"
+	"time"
 
 	_ "modernc.org/sqlite"
 )
 
 func GetTask(w http.ResponseWriter, r *http.Request) {
 	tasks := make(map[string][]models.Task)
+	search := r.FormValue("search")
+	isSearch := search != ""
 
 	db, err := sql.Open("sqlite", "scheduler.db")
 	if err != nil {
@@ -26,11 +29,33 @@ func GetTask(w http.ResponseWriter, r *http.Request) {
 	}
 	defer db.Close()
 
-	rows, err := db.Query(`SELECT id, date, title, comment, repeat FROM scheduler 
+	var rows *sql.Rows
+	if isSearch {
+		_, err := time.Parse("02.01.2006", search)
+		if err != nil {
+			rows, err = db.Query(`SELECT id, date, title, comment, repeat FROM scheduler
+	WHERE title LIKE :search OR comment LIKE :search ORDER BY date LIMIT 25`,
+				sql.Named("search", "%"+search+"%"))
+			if err != nil {
+				utils.SendErr(w, err, http.StatusInternalServerError)
+			}
+		} else {
+			date, _ := time.Parse("02.01.2006", search)
+			dateFormat := date.Format("20060102")
+			rows, err = db.Query(`SELECT id, date, title, comment, repeat FROM scheduler
+		WHERE date = :date LIMIT 25`,
+				sql.Named("date", dateFormat))
+			if err != nil {
+				utils.SendErr(w, err, http.StatusInternalServerError)
+			}
+		}
+	} else {
+		rows, err = db.Query(`SELECT id, date, title, comment, repeat FROM scheduler 
 	ORDER BY date`)
-	if err != nil {
-		utils.SendErr(w, err, http.StatusInternalServerError)
-		return
+		if err != nil {
+			utils.SendErr(w, err, http.StatusInternalServerError)
+			return
+		}
 	}
 	defer rows.Close()
 
