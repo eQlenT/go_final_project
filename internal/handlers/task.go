@@ -68,7 +68,6 @@ func Task(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		err = utils.CheckRequest(task)
-
 		if err != nil {
 			utils.SendErr(w, err, http.StatusBadRequest)
 			return
@@ -82,6 +81,7 @@ func Task(w http.ResponseWriter, r *http.Request) {
 			}
 			givenID, err := strconv.Atoi(task.ID)
 			if err != nil {
+				err = errors.New("can not parse ID")
 				utils.SendErr(w, err, http.StatusInternalServerError)
 				return
 			}

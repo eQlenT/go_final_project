@@ -419,7 +419,11 @@ func CheckRequest(r models.Task) error {
 	if len(r.Repeat) != 0 || r.Repeat != "" {
 		repeatSlc := strings.Split(r.Repeat, " ")
 		rule := repeatSlc[0]
-		if len(repeatSlc) > 3 || rule == "y" && len(repeatSlc) > 1 || rule == "d" && len(repeatSlc) == 1 || rule == "d" && len(repeatSlc) > 2 || rule == "w" && len(repeatSlc) != 2 {
+		if rule == "y" || rule == "d" || rule == "w" || rule == "m" {
+			if len(repeatSlc) > 3 || rule == "y" && len(repeatSlc) > 1 || rule == "d" && len(repeatSlc) == 1 || rule == "d" && len(repeatSlc) > 2 || rule == "w" && len(repeatSlc) != 2 {
+				return fmt.Errorf("неверный формат repeat")
+			}
+		} else {
 			return fmt.Errorf("неверный формат repeat")
 		}
 	}
