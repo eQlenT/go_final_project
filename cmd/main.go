@@ -12,7 +12,7 @@ func main() {
 	port := utils.CheckPort()
 	utils.CheckDB()
 	// Путь к директории веб-файлов
-	webDir := "./web"
+	webDir := "web"
 
 	// Создаем новый экземпляр сервера
 	server := &http.Server{
