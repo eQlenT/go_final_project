@@ -405,6 +405,7 @@ func CheckRequest(r models.Task) error {
 	if r.ID != "" || len(r.ID) != 0 {
 		_, err := strconv.Atoi(r.ID)
 		if err != nil {
+			err = fmt.Errorf("can not parse ID")
 			return err
 		}
 	}
