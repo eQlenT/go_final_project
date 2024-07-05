@@ -122,8 +122,12 @@ func Task(w http.ResponseWriter, r *http.Request) {
 			utils.SendErr(w, err, http.StatusBadRequest)
 			return
 		}
-
-		if request.Date == time.Now().Format("20060102") {
+		date, err := time.Parse("20060102", request.Date)
+		if err != nil {
+			utils.SendErr(w, err, http.StatusBadRequest)
+			return
+		}
+		if request.Date == time.Now().Format("20060102") || time.Now().Before(date) {
 			nextDate = request.Date
 		}
 
