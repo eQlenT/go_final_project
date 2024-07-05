@@ -477,10 +477,7 @@ func CompleteRequest(r models.Task) (string, error) {
 			// при указанном правиле повторения вам нужно вычислить и записать в таблицу дату выполнения,
 			// которая будет больше сегодняшнего числа
 		} else {
-			nextDate, err = NextDate(time.Now(), r.Date, r.Repeat)
-			if err != nil {
-				return "", err
-			}
+			nextDate = r.Date
 		}
 	} else if err == nil && time.Now().Before(date) {
 		nextDate, err = NextDate(time.Now(), r.Date, r.Repeat)
