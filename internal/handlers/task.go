@@ -33,13 +33,24 @@ func Task(w http.ResponseWriter, r *http.Request) {
 			utils.SendErr(w, errors.New("id is empty"), http.StatusBadRequest)
 			return
 		}
-
+		/// Вернуть ошибку, если по id ничего нет
+		// var countRow int
+		// row := db.QueryRow(`SELECT COUNT(*) FROM table_name WHERE id = ?`, id)
+		// err = row.Scan(&countRow)
+		// if err != nil {
+		// 	utils.SendErr(w, err, http.StatusInternalServerError)
+		// }
+		// if countRow != 1 {
+		// 	err = fmt.Errorf("no rows for id %s", id)
+		// 	utils.SendErr(w, err, http.StatusInternalServerError)
+		// }
 		task := models.Task{}
 		rows, err := db.Query(`SELECT id, date, title, comment, repeat FROM scheduler WHERE id = ?`, id)
 		if err != nil {
 			utils.SendErr(w, err, http.StatusInternalServerError)
 		}
 		defer rows.Close()
+
 		for rows.Next() {
 			err = rows.Scan(&task.ID, &task.Date, &task.Title, &task.Comment, &task.Repeat)
 			if err != nil {
@@ -49,6 +60,11 @@ func Task(w http.ResponseWriter, r *http.Request) {
 		}
 		if err = rows.Err(); err != nil {
 			utils.SendErr(w, err, http.StatusInternalServerError)
+			return
+		}
+		if task.ID == "" && task.Date == "" && task.Title == "" && task.Repeat == "" && task.Comment == "" {
+			err = fmt.Errorf("no rows for id %s", id)
+			utils.SendErr(w, err, http.StatusBadRequest)
 			return
 		}
 		response, err := json.Marshal(task)
