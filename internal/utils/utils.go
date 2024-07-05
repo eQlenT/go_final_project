@@ -126,7 +126,10 @@ func NextDate(now time.Time, date string, repeat string) (string, error) {
 			}
 		}
 	}
-
+	now, err = time.Parse("20060102", now.Format("20060102"))
+	if err != nil {
+		return "", fmt.Errorf("%s/nневерный формат now", err)
+	}
 	dateStart, err := time.Parse("20060102", date)
 	if err != nil {
 		return "", fmt.Errorf("%s/nневерный формат date", err)
@@ -143,8 +146,8 @@ func NextDate(now time.Time, date string, repeat string) (string, error) {
 			return resDate.Format("20060102"), nil
 		}
 	case "d":
-		if dateStart.Equal(time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.Local)) {
-			resDate = dateStart
+		if dateStart.Equal(now) {
+			resDate = dateStart.AddDate(0, 0, daysInt[0])
 			return resDate.Format("20060102"), nil
 		}
 		if daysInt[0] == 1 {
@@ -158,11 +161,14 @@ func NextDate(now time.Time, date string, repeat string) (string, error) {
 			}
 			return resDate.Format("20060102"), nil
 		}
-		resDate = dateStart
+		if now.Before(dateStart) {
+			resDate = dateStart.AddDate(0, 0, daysInt[0])
+		} else {
+			resDate = dateStart
+		}
 		for resDate.Before(time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.Local)) {
 			resDate = resDate.AddDate(0, 0, daysInt[0])
 		}
-		resDate = resDate.AddDate(0, 0, daysInt[0])
 		return resDate.Format("20060102"), nil
 	case "y":
 		resDate = dateStart.AddDate(1, 0, 0)

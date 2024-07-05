@@ -47,7 +47,8 @@ func TaskDone(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if task.Repeat != "" {
-		task.Date, err = utils.NextDate(time.Now(), task.Date, task.Repeat)
+		tmpDate := task.Date
+		task.Date, err = utils.NextDate(time.Now(), tmpDate, task.Repeat)
 		if err != nil {
 			utils.SendErr(w, err, http.StatusInternalServerError)
 			return
