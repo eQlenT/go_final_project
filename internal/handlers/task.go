@@ -9,6 +9,7 @@ import (
 	"go_final_project/internal/utils"
 	"net/http"
 	"strconv"
+	"time"
 
 	_ "modernc.org/sqlite"
 )
@@ -120,6 +121,10 @@ func Task(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			utils.SendErr(w, err, http.StatusBadRequest)
 			return
+		}
+
+		if request.Date == time.Now().Format("20060102") {
+			nextDate = request.Date
 		}
 
 		res, err := db.Exec(`INSERT INTO scheduler (date, title, comment, repeat) VALUES (?, ?, ?, ?)`,
