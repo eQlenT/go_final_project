@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"database/sql"
 	"errors"
 	"fmt"
 	"go_final_project/internal/models"
@@ -12,27 +11,21 @@ import (
 	"time"
 )
 
-func TaskDone(w http.ResponseWriter, r *http.Request) {
+func (c *DBConnection) TaskDone(w http.ResponseWriter, r *http.Request) {
+	c.Mu.Lock()
+	defer c.Mu.Unlock()
 	if r.Method != http.MethodPost {
 		err := errors.New("request method must be post")
 		utils.SendErr(w, err, http.StatusInternalServerError)
 		return
 	}
-
-	db, err := sql.Open("sqlite", "scheduler.db")
-	if err != nil {
-		utils.SendErr(w, err, http.StatusInternalServerError)
-		return
-	}
-	defer db.Close()
-
 	id := r.FormValue("id")
 	if id == "" {
 		utils.SendErr(w, errors.New("id is empty"), http.StatusBadRequest)
 		return
 	}
 	task := models.Task{}
-	rows, err := db.Query(`SELECT id, date, title, comment, repeat FROM scheduler WHERE id = ?`, id)
+	rows, err := c.DB.Query(`SELECT id, date, title, comment, repeat FROM scheduler WHERE id = ?`, id)
 	if err != nil {
 		utils.SendErr(w, err, http.StatusInternalServerError)
 	}
@@ -68,7 +61,7 @@ func TaskDone(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		}
-		_, err = db.Exec(`UPDATE scheduler SET date = ? WHERE id = ?`,
+		_, err = c.DB.Exec(`UPDATE scheduler SET date = ? WHERE id = ?`,
 			nextDate, task.ID)
 		if err != nil {
 			utils.SendErr(w, err, http.StatusInternalServerError)
@@ -77,7 +70,7 @@ func TaskDone(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		fmt.Fprint(w, "{}")
 	} else {
-		_, err = db.Exec(`DELETE FROM scheduler WHERE id = ?`, task.ID)
+		_, err = c.DB.Exec(`DELETE FROM scheduler WHERE id = ?`, task.ID)
 		if err != nil {
 			utils.SendErr(w, err, http.StatusInternalServerError)
 		}

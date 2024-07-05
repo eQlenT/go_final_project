@@ -11,9 +11,11 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	_ "modernc.org/sqlite"
 )
 
-func CheckDB() {
+func InitDB() *sql.DB {
 	const (
 		CreateTableQuery = `CREATE TABLE scheduler (
 		id      INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -62,6 +64,7 @@ func CheckDB() {
 
 		}
 	}
+	return db
 }
 
 func CheckPort() string {

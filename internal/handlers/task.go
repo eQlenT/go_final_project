@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -14,14 +13,9 @@ import (
 	_ "modernc.org/sqlite"
 )
 
-func Task(w http.ResponseWriter, r *http.Request) {
-	db, err := sql.Open("sqlite", "scheduler.db")
-	if err != nil {
-		utils.SendErr(w, err, http.StatusInternalServerError)
-		return
-	}
-	defer db.Close()
-
+func (c *DBConnection) Task(w http.ResponseWriter, r *http.Request) {
+	c.Mu.Lock()
+	defer c.Mu.Unlock()
 	switch r.Method {
 	// В нашем случае необходимо добавить обработку GET-запроса, который возвратит все параметры задачи по её идентификатору.
 	// Если сейчас нажать на иконку редактирования задачи, появится ошибка.
@@ -33,19 +27,8 @@ func Task(w http.ResponseWriter, r *http.Request) {
 			utils.SendErr(w, errors.New("id is empty"), http.StatusBadRequest)
 			return
 		}
-		/// Вернуть ошибку, если по id ничего нет
-		// var countRow int
-		// row := db.QueryRow(`SELECT COUNT(*) FROM table_name WHERE id = ?`, id)
-		// err = row.Scan(&countRow)
-		// if err != nil {
-		// 	utils.SendErr(w, err, http.StatusInternalServerError)
-		// }
-		// if countRow != 1 {
-		// 	err = fmt.Errorf("no rows for id %s", id)
-		// 	utils.SendErr(w, err, http.StatusInternalServerError)
-		// }
 		task := models.Task{}
-		rows, err := db.Query(`SELECT id, date, title, comment, repeat FROM scheduler WHERE id = ?`, id)
+		rows, err := c.DB.Query(`SELECT id, date, title, comment, repeat FROM scheduler WHERE id = ?`, id)
 		if err != nil {
 			utils.SendErr(w, err, http.StatusInternalServerError)
 		}
@@ -90,7 +73,7 @@ func Task(w http.ResponseWriter, r *http.Request) {
 			return
 		} else {
 			var maxID int
-			row := db.QueryRow(`SELECT MAX(id) FROM scheduler`)
+			row := c.DB.QueryRow(`SELECT MAX(id) FROM scheduler`)
 			row.Scan(&maxID)
 			if err = row.Err(); err != nil {
 				utils.SendErr(w, err, http.StatusInternalServerError)
@@ -108,7 +91,7 @@ func Task(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		}
-		_, err = db.Exec(`UPDATE scheduler SET date = ?, title = ?, comment = ?, repeat = ? WHERE id = ?`,
+		_, err = c.DB.Exec(`UPDATE scheduler SET date = ?, title = ?, comment = ?, repeat = ? WHERE id = ?`,
 			task.Date, task.Title, task.Comment, task.Repeat, task.ID)
 		if err != nil {
 			utils.SendErr(w, err, http.StatusInternalServerError)
@@ -149,7 +132,7 @@ func Task(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
-		res, err := db.Exec(`INSERT INTO scheduler (date, title, comment, repeat) VALUES (?, ?, ?, ?)`,
+		res, err := c.DB.Exec(`INSERT INTO scheduler (date, title, comment, repeat) VALUES (?, ?, ?, ?)`,
 			nextDate, request.Title, request.Comment, request.Repeat)
 		if err != nil {
 			utils.SendErr(w, err, http.StatusInternalServerError)
@@ -176,9 +159,9 @@ func Task(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		var maxID int
-		row := db.QueryRow(`SELECT MAX(id) FROM scheduler`)
+		row := c.DB.QueryRow(`SELECT MAX(id) FROM scheduler`)
 		row.Scan(&maxID)
-		if err = row.Err(); err != nil {
+		if err := row.Err(); err != nil {
 			utils.SendErr(w, err, http.StatusInternalServerError)
 			return
 		}
@@ -193,7 +176,7 @@ func Task(w http.ResponseWriter, r *http.Request) {
 			utils.SendErr(w, err, http.StatusBadRequest)
 			return
 		}
-		_, err = db.Exec(`DELETE FROM scheduler WHERE id = ?`, id)
+		_, err = c.DB.Exec(`DELETE FROM scheduler WHERE id = ?`, id)
 		if err != nil {
 			utils.SendErr(w, err, http.StatusInternalServerError)
 		}

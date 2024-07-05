@@ -10,7 +10,8 @@ import (
 
 func main() {
 	port := utils.CheckPort()
-	utils.CheckDB()
+	db := utils.InitDB()
+	DBconnection := &handlers.DBConnection{DB: db}
 	// Путь к директории веб-файлов
 	webDir := "web"
 
@@ -22,12 +23,13 @@ func main() {
 	// Настраиваем маршрутизацию для всех файлов в директории web
 	http.Handle("/", http.FileServer(http.Dir(webDir)))
 	http.HandleFunc("/api/nextdate", handlers.NextDate)
-	http.HandleFunc("/api/task", handlers.Task)
-	http.HandleFunc("/api/tasks", handlers.GetTasks)
-	http.HandleFunc("/api/task/done", handlers.TaskDone)
+	http.HandleFunc("/api/task", DBconnection.Task)
+	http.HandleFunc("/api/tasks", DBconnection.GetTasks)
+	http.HandleFunc("/api/task/done", DBconnection.TaskDone)
 	// Запускаем сервер
 	err := server.ListenAndServe()
 	if err != nil {
 		panic(err)
 	}
+	defer db.Close()
 }

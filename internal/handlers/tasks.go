@@ -17,23 +17,17 @@ import (
 	_ "modernc.org/sqlite"
 )
 
-func GetTasks(w http.ResponseWriter, r *http.Request) {
+func (c *DBConnection) GetTasks(w http.ResponseWriter, r *http.Request) {
+	c.Mu.Lock()
+	defer c.Mu.Unlock()
 	tasks := make(map[string][]models.Task)
 	search := r.FormValue("search")
 	isSearch := search != ""
-
-	db, err := sql.Open("sqlite", "scheduler.db")
-	if err != nil {
-		utils.SendErr(w, err, http.StatusInternalServerError)
-		return
-	}
-	defer db.Close()
-
 	var rows *sql.Rows
 	if isSearch {
 		_, err := time.Parse("02.01.2006", search)
 		if err != nil {
-			rows, err = db.Query(`SELECT id, date, title, comment, repeat FROM scheduler
+			rows, err = c.DB.Query(`SELECT id, date, title, comment, repeat FROM scheduler
 	WHERE title LIKE :search OR comment LIKE :search ORDER BY date LIMIT 25`,
 				sql.Named("search", "%"+search+"%"))
 			if err != nil {
@@ -42,7 +36,7 @@ func GetTasks(w http.ResponseWriter, r *http.Request) {
 		} else {
 			date, _ := time.Parse("02.01.2006", search)
 			dateFormat := date.Format("20060102")
-			rows, err = db.Query(`SELECT id, date, title, comment, repeat FROM scheduler
+			rows, err = c.DB.Query(`SELECT id, date, title, comment, repeat FROM scheduler
 		WHERE date = :date LIMIT 25`,
 				sql.Named("date", dateFormat))
 			if err != nil {
@@ -50,7 +44,8 @@ func GetTasks(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	} else {
-		rows, err = db.Query(`SELECT id, date, title, comment, repeat FROM scheduler 
+		var err error
+		rows, err = c.DB.Query(`SELECT id, date, title, comment, repeat FROM scheduler 
 	ORDER BY date LIMIT 25`)
 		if err != nil {
 			utils.SendErr(w, err, http.StatusInternalServerError)
