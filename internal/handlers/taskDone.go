@@ -7,6 +7,8 @@ import (
 	"go_final_project/internal/models"
 	"go_final_project/internal/utils"
 	"net/http"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -47,14 +49,27 @@ func TaskDone(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if task.Repeat != "" {
-		tmpDate := task.Date
-		task.Date, err = utils.NextDate(time.Now(), tmpDate, task.Repeat)
+		nextDate, err := utils.NextDate(time.Now(), task.Date, task.Repeat)
 		if err != nil {
 			utils.SendErr(w, err, http.StatusInternalServerError)
 			return
 		}
+		if task.Date == time.Now().Format("20060102") {
+			date, err := time.Parse("20060102", task.Date)
+			if err != nil {
+				utils.SendErr(w, err, http.StatusInternalServerError)
+				return
+			}
+			rptSlc := strings.Split(task.Repeat, " ")
+			subDays, err := strconv.Atoi(rptSlc[1])
+			nextDate = date.AddDate(0, 0, subDays).Format("20060102")
+			if err != nil {
+				utils.SendErr(w, err, http.StatusInternalServerError)
+				return
+			}
+		}
 		_, err = db.Exec(`UPDATE scheduler SET date = ? WHERE id = ?`,
-			task.Date, task.ID)
+			nextDate, task.ID)
 		if err != nil {
 			utils.SendErr(w, err, http.StatusInternalServerError)
 			return
