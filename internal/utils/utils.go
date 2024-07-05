@@ -419,6 +419,7 @@ func CompleteRequest(r models.Task) (string, error) {
 	// Если поле date не указано или содержит пустую строку, берётся сегодняшнее число.
 	if r.Date == "" || len(r.Date) == 0 {
 		r.Date = time.Now().Format("20060102")
+		return r.Date, nil
 	}
 	// Если дата меньше сегодняшнего числа, есть два варианта:
 	if date, err := time.Parse("20060102", r.Date); err == nil && date.Before(time.Now()) {
