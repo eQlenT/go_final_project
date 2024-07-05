@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"database/sql"
 	"fmt"
 	"go_final_project/internal/models"
 	"log"
@@ -15,16 +14,7 @@ import (
 	_ "modernc.org/sqlite"
 )
 
-func InitDB() *sql.DB {
-	const (
-		CreateTableQuery = `CREATE TABLE scheduler (
-		id      INTEGER PRIMARY KEY AUTOINCREMENT,
-		date    CHAR(8) NOT NULL DEFAULT "",
-		title   VARCHAR(128) NOT NULL DEFAULT "",
-		comment TEXT,
-		repeat VARCHAR(128) NOT NULL DEFAULT "" 
-		);`
-	)
+func CheckDB() (string, bool) {
 
 	path := os.Getenv("TODO_DBFILE")
 	if path == "" {
@@ -44,27 +34,7 @@ func InitDB() *sql.DB {
 		fmt.Println(err)
 		install = true
 	}
-	// если install равен true, после открытия БД требуется выполнить
-	// sql-запрос с CREATE TABLE и CREATE INDEX
-
-	db, err := sql.Open("sqlite", path)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer db.Close()
-
-	// Создание БД, в случае её отсутвия
-	if install {
-		if _, err := db.Exec(CreateTableQuery); err != nil {
-			fmt.Println(err)
-		}
-
-		if _, err = db.Exec(`CREATE INDEX taks_date ON scheduler (date);`); err != nil {
-			fmt.Println(err)
-
-		}
-	}
-	return db
+	return path, install
 }
 
 func CheckPort() string {

@@ -1,20 +1,28 @@
 package main
 
 import (
+	"database/sql"
 	"go_final_project/internal/handlers"
 	"go_final_project/internal/utils"
+	"log"
 	"net/http"
 
 	_ "modernc.org/sqlite"
 )
 
 func main() {
-	port := utils.CheckPort()
-	db := utils.InitDB()
-	DBconnection := &handlers.DBConnection{DB: db}
-	// Путь к директории веб-файлов
 	webDir := "web"
+	port := utils.CheckPort()
+	path, install := utils.CheckDB()
 
+	db, err := sql.Open("sqlite", path)
+	if err != nil {
+		log.Fatal(err)
+	}
+	DBconnection := &handlers.DBConnection{DB: db}
+	if install {
+		DBconnection.InitDB()
+	}
 	// Создаем новый экземпляр сервера
 	server := &http.Server{
 		Addr: ":" + port, // Порт, на котором будет слушаться сервер
@@ -27,7 +35,7 @@ func main() {
 	http.HandleFunc("/api/tasks", DBconnection.GetTasks)
 	http.HandleFunc("/api/task/done", DBconnection.TaskDone)
 	// Запускаем сервер
-	err := server.ListenAndServe()
+	err = server.ListenAndServe()
 	if err != nil {
 		panic(err)
 	}
