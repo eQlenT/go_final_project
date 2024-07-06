@@ -19,6 +19,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer db.Close()
 	DBconnection := &handlers.DBConnection{DB: db}
 	if install {
 		DBconnection.InitDB()
@@ -39,5 +40,4 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	defer db.Close()
 }
