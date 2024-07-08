@@ -17,6 +17,18 @@ import (
 	_ "modernc.org/sqlite"
 )
 
+// GetTasks - обработчик для GET-запросов к /api/tasks.
+// Он извлекает список ближайших задач из базы данных и возвращает их в виде JSON-ответа.
+// Задачи сортируются по дате в порядке возрастания.
+// Каждая задача содержит все поля таблицы scheduler в виде строк.
+// Дата представлена в формате 20060102.
+//
+// Параметры:
+// - w: http.ResponseWriter для записи ответа.
+// - r: *http.Request, содержащий данные запроса.
+//
+// Возвращает:
+// - Функция не возвращает никакого значения, но записывает JSON-ответ в http.ResponseWriter.
 func (c *DBConnection) GetTasks(w http.ResponseWriter, r *http.Request) {
 	c.Mu.Lock()
 	defer c.Mu.Unlock()
