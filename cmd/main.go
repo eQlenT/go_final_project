@@ -34,14 +34,15 @@ func main() {
 	server := &http.Server{
 		Addr: ":" + port, // Порт, на котором сервер будет прослушивать
 	}
-
 	// Настраиваем маршрутизацию для обслуживания всех файлов в каталоге web и конечных точек API
-	http.Handle("/", http.FileServer(http.Dir(webDir)))
-	http.HandleFunc("/api/signin", handlers.Authentication)
-	http.HandleFunc("/api/nextdate", handlers.NextDate)
-	http.HandleFunc("/api/task", DBconnection.Task)
-	http.HandleFunc("/api/tasks", DBconnection.GetTasks)
-	http.HandleFunc("/api/task/done", DBconnection.TaskDone)
+	http.Handle("/", utils.Auth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.FileServer(http.Dir(webDir)).ServeHTTP(w, r)
+	})))
+	http.HandleFunc("/api/signin", utils.Auth(handlers.Authentication))
+	http.HandleFunc("/api/nextdate", utils.Auth(handlers.NextDate))
+	http.HandleFunc("/api/task", utils.Auth(DBconnection.Task))
+	http.HandleFunc("/api/tasks", utils.Auth(DBconnection.GetTasks))
+	http.HandleFunc("/api/task/done", utils.Auth(DBconnection.TaskDone))
 
 	// Запускаем сервер и прослушиваем входящие подключения
 	err = server.ListenAndServe()
