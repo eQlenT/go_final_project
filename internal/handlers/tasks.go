@@ -28,10 +28,11 @@ import (
 // - r: *http.Request, содержащий данные запроса.
 //
 // Возвращает:
-// - Функция не возвращает никакого значения, но записывает JSON-ответ в http.ResponseWriter.
+// // - Функция не возвращает никакого значения, но записывает JSON-ответ в http.ResponseWriter.
 func (c *DBConnection) GetTasks(w http.ResponseWriter, r *http.Request) {
 	c.Mu.Lock()
 	defer c.Mu.Unlock()
+	const limit = 50
 	tasks := make(map[string][]models.Task)
 	search := r.FormValue("search")
 	isSearch := search != ""
@@ -40,8 +41,9 @@ func (c *DBConnection) GetTasks(w http.ResponseWriter, r *http.Request) {
 		_, err := time.Parse("02.01.2006", search)
 		if err != nil {
 			rows, err = c.DB.Query(`SELECT id, date, title, comment, repeat FROM scheduler
-	WHERE title LIKE :search OR comment LIKE :search ORDER BY date LIMIT 25`,
-				sql.Named("search", "%"+search+"%"))
+	WHERE title LIKE :search OR comment LIKE :search ORDER BY date LIMIT :limit`,
+				sql.Named("search", "%"+search+"%"),
+				sql.Named("limit", limit))
 			if err != nil {
 				utils.SendErr(w, err, http.StatusInternalServerError)
 			}
@@ -49,16 +51,18 @@ func (c *DBConnection) GetTasks(w http.ResponseWriter, r *http.Request) {
 			date, _ := time.Parse("02.01.2006", search)
 			dateFormat := date.Format("20060102")
 			rows, err = c.DB.Query(`SELECT id, date, title, comment, repeat FROM scheduler
-		WHERE date = :date LIMIT 25`,
-				sql.Named("date", dateFormat))
+		WHERE date = :date LIMIT :limit`,
+				sql.Named("date", dateFormat),
+				sql.Named("limit", limit))
 			if err != nil {
 				utils.SendErr(w, err, http.StatusInternalServerError)
 			}
 		}
 	} else {
 		var err error
-		rows, err = c.DB.Query(`SELECT id, date, title, comment, repeat FROM scheduler 
-	ORDER BY date LIMIT 25`)
+		rows, err = c.DB.Query(`SELECT id, date, title, comment, repeat FROM scheduler
+	ORDER BY date LIMIT :limit`,
+			sql.Named("limit", limit))
 		if err != nil {
 			utils.SendErr(w, err, http.StatusInternalServerError)
 			return

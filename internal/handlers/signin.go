@@ -13,10 +13,6 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-// Пусть пароль хранится в переменной окружения TODO_PASSWORD.
-// Если это значение не пустое — нужно запросить пароль.
-// При этом ваши API-запросы тоже должны проверять, аутентифицирован ли пользователь или нет.
-// Разберём пошагово реализацию аутентификации.
 func Authentication(w http.ResponseWriter, r *http.Request) {
 	// Получаем пароль из переменной окружения
 	password := os.Getenv("TODO_PASSWORD")
@@ -28,21 +24,19 @@ func Authentication(w http.ResponseWriter, r *http.Request) {
 		utils.SendErr(w, err, http.StatusBadRequest)
 		return
 	}
-
+	var hashedPass string
 	if password == "" {
-		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-		fmt.Fprintf(w, `{"token": ""}`)
-		return
-	}
-
-	if password != request.Pass {
+		hashString := sha256.Sum256([]byte(""))
+		hashedPass = hex.EncodeToString(hashString[:])
+	} else if password != request.Pass {
 		err := errors.New("password is incorrect")
 		utils.SendErr(w, err, http.StatusBadRequest)
 		return
 	}
-	hashString := sha256.Sum256([]byte(request.Pass))
-	// так как result — массив байт, а EncodeToString принимает слайс, преобразуем массив в слайс при помощи [:]
-	hashedPass := hex.EncodeToString(hashString[:])
+	if len(password) > 0 {
+		hashString := sha256.Sum256([]byte(request.Pass))
+		hashedPass = hex.EncodeToString(hashString[:])
+	}
 	claims := jwt.MapClaims{
 		"hashedPass": hashedPass,
 	}
