@@ -28,20 +28,19 @@ func Authentication(w http.ResponseWriter, r *http.Request) {
 		utils.SendErr(w, err, http.StatusBadRequest)
 		return
 	}
-
+	var hashedPass string
 	if password == "" {
-		w.WriteHeader(http.StatusAccepted)
-		return
-	}
-
-	if password != request.Pass {
+		hashString := sha256.Sum256([]byte(""))
+		hashedPass = hex.EncodeToString(hashString[:])
+	} else if password != request.Pass {
 		err := errors.New("password is incorrect")
 		utils.SendErr(w, err, http.StatusBadRequest)
 		return
 	}
-	hashString := sha256.Sum256([]byte(request.Pass))
-	// так как result — массив байт, а EncodeToString принимает слайс, преобразуем массив в слайс при помощи [:]
-	hashedPass := hex.EncodeToString(hashString[:])
+	if len(password) > 0 {
+		hashString := sha256.Sum256([]byte(request.Pass))
+		hashedPass = hex.EncodeToString(hashString[:])
+	}
 	claims := jwt.MapClaims{
 		"hashedPass": hashedPass,
 	}
