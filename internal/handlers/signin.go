@@ -30,7 +30,8 @@ func Authentication(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if password == "" {
-		w.WriteHeader(http.StatusAccepted)
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		fmt.Fprintf(w, `{"token": ""}`)
 		return
 	}
 
