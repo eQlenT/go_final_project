@@ -43,6 +43,7 @@ func (h *Handler) Task(w http.ResponseWriter, r *http.Request) {
 		id, err := h.GetID(r)
 		if err != nil {
 			h.SendErr(w, err, http.StatusBadRequest)
+			return
 		}
 		task, err := h.service.Store.GetTask(id)
 		if err != nil {
