@@ -6,16 +6,15 @@ import (
 	"fmt"
 	"go_final_project/internal/models/service/store/task"
 	"time"
-
-	"go.uber.org/zap"
 )
 
 type TaskStore struct {
 	db *sql.DB
 }
 
-func NewTaskStore(db *sql.DB, logger *zap.SugaredLogger) *TaskStore {
-	return &TaskStore{db: db}
+func NewTaskStore(db *sql.DB) *TaskStore {
+	return &TaskStore{
+		db: db}
 }
 
 // InitDB инициализирует базу данных путем создания таблицы "scheduler" и индекса на столбце "date".

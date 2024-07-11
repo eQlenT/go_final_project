@@ -16,6 +16,18 @@ type TaskService struct {
 	logger *zap.SugaredLogger
 }
 
+// NewTaskService создает новый экземпляр TaskService.
+// Он принимает экземпляр TaskStore и экземпляр zap.SugaredLogger в качестве параметров.
+// Экземпляр TaskStore используется для взаимодействия с базовым хранилищем данных,
+// в то время как экземпляр zap.SugaredLogger используется для ведения журнала.
+//
+// Функция возвращает указатель на новый экземпляр TaskService.
+func NewTaskService(store *store.TaskStore, logger *zap.SugaredLogger) *TaskService {
+	return &TaskService{
+		Store:  store,
+		logger: logger,
+	}
+}
 func NewTaskService(store *store.TaskStore, logger *zap.SugaredLogger) *TaskService {
 	return &TaskService{
 		Store:  store,
@@ -23,6 +35,34 @@ func NewTaskService(store *store.TaskStore, logger *zap.SugaredLogger) *TaskServ
 	}
 }
 
+// Search ищет задачи по указанному ключу (слово или дата).
+// Сначала он пытается разобрать ключ как дату с использованием формата "02.01.2006".
+// Если это успешно, он вызывает метод GetByDate хранилища Task для получения задач по дате.
+// Если ключ не может быть разобран как дата, он вызывает метод GetByWord хранилища Task для получения задач по слову.
+// Если какой-либо из методов возвращает ошибку, он регистрирует ошибку с использованием предоставленного журнала и возвращает nil, error.
+// Если ключ "tasks" в возвращенном словаре равен nil, он инициализирует его пустым массивом Task.
+// Наконец, он возвращает словарь задач и nil.
+func (s *TaskService) Search(key string, limit int) (map[string][]task.Task, error) {
+	_, err := time.Parse("02.01.2006", key)
+	var tasks map[string][]task.Task
+	if err != nil {
+		tasks, err = s.Store.GetByWord(key, limit)
+		if err != nil {
+			s.logger.Error(err)
+			return nil, err
+		}
+	} else {
+		tasks, err = s.Store.GetByDate(key, limit)
+		if err != nil {
+			s.logger.Error(err)
+			return nil, err
+		}
+	}
+	if tasks["tasks"] == nil {
+		tasks["tasks"] = []task.Task{}
+	}
+	return tasks, nil
+}
 func (s *TaskService) Search(key string, limit int) (map[string][]task.Task, error) {
 	_, err := time.Parse("02.01.2006", key)
 	var tasks map[string][]task.Task

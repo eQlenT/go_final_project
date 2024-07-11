@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"go_final_project/internal/checkers"
 	"go_final_project/internal/handlers"
-	"go_final_project/internal/models/service/store"
 	"go_final_project/internal/models/service"
+	"go_final_project/internal/models/service/store"
 	"log"
 	"net/http"
 
@@ -32,7 +32,7 @@ func main() {
 		log.Fatal(err)
 	}
 	defer db.Close()
-	store := store.NewTaskStore(db, sugar)
+	store := store.NewTaskStore(db)
 	if install {
 		store.InitDB()
 	}
@@ -53,8 +53,8 @@ func main() {
 	http.HandleFunc("/api/task/done", handler.TaskDone)
 
 	// Запускаем сервер и прослушиваем входящие подключения
-	err = server.ListenAndServe()
 	sugar.Infof("Server started at %s", url)
+	err = server.ListenAndServe()
 	if err != nil {
 		sugar.Panic(err)
 	}
