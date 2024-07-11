@@ -10,11 +10,11 @@ import (
 )
 
 type Handler struct {
-	service models.TaskService
+	service *models.TaskService
 	logger  *zap.SugaredLogger
 }
 
-func NewHandler(service models.TaskService, logger *zap.SugaredLogger) *Handler {
+func NewHandler(service *models.TaskService, logger *zap.SugaredLogger) *Handler {
 	return &Handler{
 		service: service,
 		logger:  logger,

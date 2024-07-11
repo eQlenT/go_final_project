@@ -2,6 +2,7 @@ package models
 
 import (
 	"fmt"
+	"go_final_project/internal/utils"
 	"strings"
 	"time"
 )
@@ -41,13 +42,13 @@ func (t *Task) CompleteRequest() (string, error) {
 			// при указанном правиле повторения вам нужно вычислить и записать в таблицу дату выполнения,
 			// которая будет больше сегодняшнего числа
 		} else {
-			nextDate, err = NextDate(time.Now(), t.Date, t.Repeat)
+			nextDate, err = utils.NextDate(time.Now(), t.Date, t.Repeat)
 			if err != nil {
 				return "", err
 			}
 		}
 	} else if err == nil && time.Now().Before(date) {
-		nextDate, err = NextDate(time.Now(), t.Date, t.Repeat)
+		nextDate, err = utils.NextDate(time.Now(), t.Date, t.Repeat)
 		if err != nil {
 			return "", err
 		}

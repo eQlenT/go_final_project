@@ -35,8 +35,8 @@ func main() {
 	if install {
 		store.InitDB()
 	}
-	service := models.NewTaskService(*store, sugar)
-	handler := handlers.NewHandler(*service, sugar)
+	service := models.NewTaskService(store, sugar)
+	handler := handlers.NewHandler(service, sugar)
 
 	// Создаем новый экземпляр http.Server с указанным портом
 	server := &http.Server{

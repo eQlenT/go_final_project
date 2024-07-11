@@ -1,6 +1,7 @@
 package models
 
 import (
+	"go_final_project/internal/utils"
 	"strconv"
 	"strings"
 	"time"
@@ -9,11 +10,11 @@ import (
 )
 
 type TaskService struct {
-	Store  TaskStore
+	Store  *TaskStore
 	logger *zap.SugaredLogger
 }
 
-func NewTaskService(store TaskStore, logger *zap.SugaredLogger) *TaskService {
+func NewTaskService(store *TaskStore, logger *zap.SugaredLogger) *TaskService {
 	return &TaskService{
 		Store:  store,
 		logger: logger,
@@ -49,7 +50,7 @@ func (s *TaskService) Done(id int) error {
 		return err
 	}
 	if task.Repeat != "" {
-		task.Date, err = NextDate(time.Now(), task.Date, task.Repeat)
+		task.Date, err = utils.NextDate(time.Now(), task.Date, task.Repeat)
 		if err != nil {
 			s.logger.Error(err)
 			return err
