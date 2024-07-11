@@ -100,14 +100,18 @@ func (t Task) CheckTask() error {
 
 func (t Task) CheckDate(isPut bool) (string, error) {
 	var date string
+	now, err := time.Parse("20060102", time.Now().Format("20060102"))
+	if err != nil {
+		return "", err
+	}
 	tmpDate, err := time.Parse("20060102", t.Date)
 	if err != nil {
 		return "", err
 	}
-	if t.Date == time.Now().Format("20060102") || time.Now().Before(tmpDate) {
+	if t.Date == time.Now().Format("20060102") || now.Before(tmpDate) {
 		date = t.Date
 	}
-	if isPut && tmpDate.Before(time.Now()) {
+	if isPut && tmpDate.Before(time.Now()) && !now.Equal(tmpDate) {
 		return "", fmt.Errorf("date is less than today's date")
 	}
 	return date, nil
