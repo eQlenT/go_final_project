@@ -83,7 +83,7 @@ func (t Task) CheckTask() error {
 	}
 	if t.Date != "" {
 		if _, err := time.Parse("20060102", t.Date); err != nil {
-			return fmt.Errorf("неверный формат даты")
+			return fmt.Errorf("неверный формат даты %s", t.Date)
 		}
 	}
 	if len(t.Repeat) != 0 || t.Repeat != "" {

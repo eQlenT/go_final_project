@@ -95,19 +95,19 @@ func (h *Handler) Task(w http.ResponseWriter, r *http.Request) {
 			h.SendErr(w, err, http.StatusBadRequest)
 			return
 		}
-
 		nextDate, err := request.CompleteRequest()
 		if err != nil {
 			h.SendErr(w, err, http.StatusBadRequest)
 			return
 		}
+		request.Date = nextDate
 		if request.Date != "" {
 			nextDate, err = request.CheckDate()
 			if err != nil {
 				h.SendErr(w, err, http.StatusBadRequest)
 			}
+			request.Date = nextDate
 		}
-		request.Date = nextDate
 		lastInsertID, err := h.service.Store.Insert(&request)
 		if err != nil {
 			h.SendErr(w, err, http.StatusInternalServerError)
