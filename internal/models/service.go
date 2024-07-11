@@ -70,11 +70,16 @@ func (s *TaskService) Done(id int) error {
 			}
 		}
 		s.Store.UpdateDate(task)
-		s.logger.Infof("Task %s done", task.Title)
+		s.logger.Infof("Task `%s` done", task.Title)
 		return nil
 	} else {
-		s.Store.Delete(task.ID)
-		s.logger.Infof("Task %s done and deleted", task.Title)
+		id, err := strconv.Atoi(task.ID)
+		if err != nil {
+			s.logger.Error(err)
+			return err
+		}
+		s.Store.Delete(id)
+		s.logger.Infof("Task `%s` done and deleted", task.Title)
 	}
 	return nil
 }

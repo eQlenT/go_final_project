@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"go_final_project/internal/models"
 	"net/http"
+	"strconv"
 
 	_ "modernc.org/sqlite"
 )
@@ -35,6 +36,8 @@ import (
 //
 // По умолчанию, если метод запроса не GET, POST, PUT или DELETE, возвращает ошибку 500 Internal Server Error.
 func (h *Handler) Task(w http.ResponseWriter, r *http.Request) {
+	h.mu.Lock()
+	defer h.mu.Unlock()
 	switch r.Method {
 	case http.MethodGet:
 		id, err := h.GetID(r)
@@ -67,7 +70,12 @@ func (h *Handler) Task(w http.ResponseWriter, r *http.Request) {
 			h.SendErr(w, err, http.StatusBadRequest)
 			return
 		} else {
-			err = h.service.Store.CheckID(task.ID)
+			id, err := strconv.Atoi(task.ID)
+			if err != nil {
+				h.SendErr(w, err, http.StatusBadRequest)
+				return
+			}
+			err = h.service.Store.CheckID(id)
 			if err != nil {
 				h.SendErr(w, err, http.StatusBadRequest)
 			}

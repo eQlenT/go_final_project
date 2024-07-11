@@ -8,7 +8,7 @@ import (
 )
 
 type Task struct {
-	ID      int    `json:"id"`
+	ID      string `json:"id"`
 	Title   string `json:"title"`
 	Date    string `json:"date"`
 	Repeat  string `json:"repeat"`

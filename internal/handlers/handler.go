@@ -5,6 +5,7 @@ import (
 	"go_final_project/internal/models"
 	"net/http"
 	"strconv"
+	"sync"
 
 	"go.uber.org/zap"
 )
@@ -12,12 +13,14 @@ import (
 type Handler struct {
 	service *models.TaskService
 	logger  *zap.SugaredLogger
+	mu      sync.Mutex
 }
 
 func NewHandler(service *models.TaskService, logger *zap.SugaredLogger) *Handler {
 	return &Handler{
 		service: service,
 		logger:  logger,
+		mu:      sync.Mutex{},
 	}
 }
 
