@@ -1,9 +1,10 @@
-package models
+package store
 
 import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"go_final_project/internal/models/service/store/task"
 	"time"
 
 	"go.uber.org/zap"
@@ -69,7 +70,7 @@ func (s *TaskStore) Delete(id int) error {
 	return nil
 }
 
-func (s *TaskStore) Insert(task *Task) (int, error) {
+func (s *TaskStore) Insert(task *task.Task) (int, error) {
 	res, err := s.db.Exec(`INSERT INTO scheduler (date, title, comment, repeat) VALUES (?, ?, ?, ?)`,
 		task.Date, task.Title, task.Comment, task.Repeat)
 	if err != nil {
@@ -79,7 +80,7 @@ func (s *TaskStore) Insert(task *Task) (int, error) {
 	return int(id), err
 }
 
-func (s *TaskStore) Update(task *Task) error {
+func (s *TaskStore) Update(task *task.Task) error {
 	_, err := s.db.Exec(`UPDATE scheduler SET date = ?, title = ?, comment = ?, repeat = ? WHERE id = ?`,
 		task.Date, task.Title, task.Comment, task.Repeat, task.ID)
 	if err != nil {
@@ -88,7 +89,7 @@ func (s *TaskStore) Update(task *Task) error {
 	return nil
 }
 
-func (s *TaskStore) UpdateDate(task *Task) error {
+func (s *TaskStore) UpdateDate(task *task.Task) error {
 	_, err := s.db.Exec(`UPDATE scheduler SET date = ? WHERE id = ?`,
 		task.Date, task.ID)
 	if err != nil {
@@ -97,8 +98,8 @@ func (s *TaskStore) UpdateDate(task *Task) error {
 	return nil
 }
 
-func (s *TaskStore) GetAll(limit int) (map[string][]Task, error) {
-	tasks := make(map[string][]Task)
+func (s *TaskStore) GetAll(limit int) (map[string][]task.Task, error) {
+	tasks := make(map[string][]task.Task)
 	rows, err := s.db.Query(`SELECT id, date, title, comment, repeat FROM scheduler
 	ORDER BY date LIMIT :limit`,
 		sql.Named("limit", limit))
@@ -107,7 +108,7 @@ func (s *TaskStore) GetAll(limit int) (map[string][]Task, error) {
 	}
 	defer rows.Close()
 	for rows.Next() {
-		task := Task{}
+		task := task.Task{}
 		err := rows.Scan(&task.ID, &task.Date, &task.Title, &task.Comment, &task.Repeat)
 		if err != nil {
 			return nil, err
@@ -115,37 +116,37 @@ func (s *TaskStore) GetAll(limit int) (map[string][]Task, error) {
 		tasks["tasks"] = append(tasks["tasks"], task)
 	}
 	if tasks["tasks"] == nil {
-		tasks["tasks"] = []Task{}
+		tasks["tasks"] = []task.Task{}
 	}
 	return tasks, nil
 }
 
-func (s *TaskStore) GetTask(id int) (*Task, error) {
+func (s *TaskStore) GetTask(id int) (*task.Task, error) {
 	// Получаем задачу по идентификатору
-	task := Task{}
+	task := task.Task{}
 	rows, err := s.db.Query(`SELECT id, date, title, comment, repeat FROM scheduler WHERE id = ?`, id)
 	if err != nil {
-		return &Task{}, err
+		return &task, err
 	}
 	defer rows.Close()
 
 	for rows.Next() {
 		err = rows.Scan(&task.ID, &task.Date, &task.Title, &task.Comment, &task.Repeat)
 		if err != nil {
-			return &Task{}, err
+			return &task, err
 		}
 	}
 	if err = rows.Err(); err != nil {
-		return &Task{}, err
+		return &task, err
 	}
 	if task.Date == "" && task.Title == "" && task.Repeat == "" && task.Comment == "" {
-		return &Task{}, fmt.Errorf("no rows for id %d", id)
+		return &task, fmt.Errorf("no rows for id %d", id)
 	}
 	return &task, nil
 }
 
-func (s *TaskStore) GetByWord(key string, limit int) (map[string][]Task, error) {
-	tasks := make(map[string][]Task)
+func (s *TaskStore) GetByWord(key string, limit int) (map[string][]task.Task, error) {
+	tasks := make(map[string][]task.Task)
 	rows, err := s.db.Query(`SELECT id, date, title, comment, repeat FROM scheduler
 	WHERE title LIKE :search OR comment LIKE :search ORDER BY date LIMIT :limit`,
 		sql.Named("search", "%"+key+"%"),
@@ -155,7 +156,7 @@ func (s *TaskStore) GetByWord(key string, limit int) (map[string][]Task, error) 
 	}
 	defer rows.Close()
 	for rows.Next() {
-		task := Task{}
+		task := task.Task{}
 		err := rows.Scan(&task.ID, &task.Date, &task.Title, &task.Comment, &task.Repeat)
 		if err != nil {
 			return nil, err
@@ -166,13 +167,13 @@ func (s *TaskStore) GetByWord(key string, limit int) (map[string][]Task, error) 
 		return nil, err
 	}
 	if tasks["tasks"] == nil {
-		tasks["tasks"] = []Task{}
+		tasks["tasks"] = []task.Task{}
 	}
 	return tasks, nil
 }
 
-func (s *TaskStore) GetByDate(date string, limit int) (map[string][]Task, error) {
-	tasks := make(map[string][]Task)
+func (s *TaskStore) GetByDate(date string, limit int) (map[string][]task.Task, error) {
+	tasks := make(map[string][]task.Task)
 	dateTime, err := time.Parse("02.01.2006", date)
 	if err != nil {
 		return nil, err
@@ -187,7 +188,7 @@ func (s *TaskStore) GetByDate(date string, limit int) (map[string][]Task, error)
 	}
 	defer rows.Close()
 	for rows.Next() {
-		task := Task{}
+		task := task.Task{}
 		err := rows.Scan(&task.ID, &task.Date, &task.Title, &task.Comment, &task.Repeat)
 		if err != nil {
 			return nil, err
@@ -198,7 +199,7 @@ func (s *TaskStore) GetByDate(date string, limit int) (map[string][]Task, error)
 		return nil, err
 	}
 	if tasks["tasks"] == nil {
-		tasks["tasks"] = []Task{}
+		tasks["tasks"] = []task.Task{}
 	}
 	return tasks, nil
 }

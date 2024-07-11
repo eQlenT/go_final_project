@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"fmt"
-	"go_final_project/internal/models"
+	"go_final_project/internal/models/service"
 	"net/http"
 	"strconv"
 	"sync"
@@ -11,12 +11,12 @@ import (
 )
 
 type Handler struct {
-	service *models.TaskService
+	service *service.TaskService
 	logger  *zap.SugaredLogger
 	mu      sync.Mutex
 }
 
-func NewHandler(service *models.TaskService, logger *zap.SugaredLogger) *Handler {
+func NewHandler(service *service.TaskService, logger *zap.SugaredLogger) *Handler {
 	return &Handler{
 		service: service,
 		logger:  logger,

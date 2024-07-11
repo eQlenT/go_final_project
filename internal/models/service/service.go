@@ -1,7 +1,9 @@
-package models
+package service
 
 import (
-	"go_final_project/internal/utils"
+	"go_final_project/internal/models/service/store"
+	"go_final_project/internal/models/service/store/task"
+	"go_final_project/internal/ndate"
 	"strconv"
 	"strings"
 	"time"
@@ -10,20 +12,20 @@ import (
 )
 
 type TaskService struct {
-	Store  *TaskStore
+	Store  *store.TaskStore
 	logger *zap.SugaredLogger
 }
 
-func NewTaskService(store *TaskStore, logger *zap.SugaredLogger) *TaskService {
+func NewTaskService(store *store.TaskStore, logger *zap.SugaredLogger) *TaskService {
 	return &TaskService{
 		Store:  store,
 		logger: logger,
 	}
 }
 
-func (s *TaskService) Search(key string, limit int) (map[string][]Task, error) {
+func (s *TaskService) Search(key string, limit int) (map[string][]task.Task, error) {
 	_, err := time.Parse("02.01.2006", key)
-	var tasks map[string][]Task
+	var tasks map[string][]task.Task
 	if err != nil {
 		tasks, err = s.Store.GetByWord(key, limit)
 		if err != nil {
@@ -38,7 +40,7 @@ func (s *TaskService) Search(key string, limit int) (map[string][]Task, error) {
 		}
 	}
 	if tasks["tasks"] == nil {
-		tasks["tasks"] = []Task{}
+		tasks["tasks"] = []task.Task{}
 	}
 	return tasks, nil
 }
@@ -50,7 +52,7 @@ func (s *TaskService) Done(id int) error {
 		return err
 	}
 	if task.Repeat != "" {
-		task.Date, err = utils.NextDate(time.Now(), task.Date, task.Repeat)
+		task.Date, err = ndate.NextDate(time.Now(), task.Date, task.Repeat)
 		if err != nil {
 			s.logger.Error(err)
 			return err

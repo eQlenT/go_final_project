@@ -3,7 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
-	"go_final_project/internal/models"
+	"go_final_project/internal/models/service/store/task"
 	"net/http"
 	"strconv"
 
@@ -60,7 +60,7 @@ func (h *Handler) Task(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		w.Write(response)
 	case http.MethodPut:
-		var task models.Task
+		var task task.Task
 		err := json.NewDecoder(r.Body).Decode(&task)
 		if err != nil {
 			err = fmt.Errorf("can't parse response")
@@ -101,7 +101,7 @@ func (h *Handler) Task(w http.ResponseWriter, r *http.Request) {
 		var id struct {
 			ID int `json:"id"`
 		}
-		var request models.Task
+		var request task.Task
 		err := json.NewDecoder(r.Body).Decode(&request)
 		if err != nil {
 			h.SendErr(w, err, http.StatusBadRequest)

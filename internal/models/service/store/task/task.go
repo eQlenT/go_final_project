@@ -1,8 +1,8 @@
-package models
+package task
 
 import (
 	"fmt"
-	"go_final_project/internal/utils"
+	"go_final_project/internal/ndate"
 	"strconv"
 	"strings"
 	"time"
@@ -48,7 +48,7 @@ func (t *Task) CompleteRequest() (string, error) {
 		} else if date.Equal(timeNow) {
 			return t.Date, nil
 		} else {
-			nextDate, err = utils.NextDate(time.Now(), t.Date, t.Repeat)
+			nextDate, err = ndate.NextDate(time.Now(), t.Date, t.Repeat)
 			if err != nil {
 				return "", err
 			}

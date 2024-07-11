@@ -3,9 +3,10 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"go_final_project/internal/checkers"
 	"go_final_project/internal/handlers"
-	"go_final_project/internal/models"
-	"go_final_project/internal/utils"
+	"go_final_project/internal/models/service/store"
+	"go_final_project/internal/models/service"
 	"log"
 	"net/http"
 
@@ -18,12 +19,12 @@ import (
 func main() {
 	logger := zap.NewExample() // or NewProduction, or NewDevelopment
 	defer logger.Sync()
-	port := utils.CheckPort() // Функция для проверки и возврата номера порта
+	port := checkers.CheckPort() // Функция для проверки и возврата номера порта
 	url := fmt.Sprintf("localhost:%s", port)
 	sugar := logger.Sugar()
 	webDir := "./web" // Каталог, содержащий статические файлы для обслуживания
 
-	path, install := utils.CheckDB() // Функция для проверки и возврата пути к базе данных и флага установки
+	path, install := checkers.CheckDB() // Функция для проверки и возврата пути к базе данных и флага установки
 
 	// Открываем подключение к базе данных
 	db, err := sql.Open("sqlite", path)
@@ -31,11 +32,11 @@ func main() {
 		log.Fatal(err)
 	}
 	defer db.Close()
-	store := models.NewTaskStore(db, sugar)
+	store := store.NewTaskStore(db, sugar)
 	if install {
 		store.InitDB()
 	}
-	service := models.NewTaskService(store, sugar)
+	service := service.NewTaskService(store, sugar)
 	handler := handlers.NewHandler(service, sugar)
 
 	// Создаем новый экземпляр http.Server с указанным портом

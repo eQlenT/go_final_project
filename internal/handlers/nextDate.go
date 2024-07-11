@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"fmt"
-	"go_final_project/internal/utils"
+	"go_final_project/internal/ndate"
 	"net/http"
 	"time"
 )
@@ -40,7 +40,7 @@ func (h *Handler) NextDate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	next, err := utils.NextDate(now, date, repeat)
+	next, err := ndate.NextDate(now, date, repeat)
 	if err != nil {
 		h.SendErr(w, err, http.StatusBadRequest)
 		return

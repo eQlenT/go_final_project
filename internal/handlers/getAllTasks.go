@@ -8,7 +8,7 @@ package handlers
 
 import (
 	"encoding/json"
-	"go_final_project/internal/models"
+	"go_final_project/internal/models/service/store/task"
 	"net/http"
 
 	_ "modernc.org/sqlite"
@@ -28,7 +28,7 @@ import (
 // // - Функция не возвращает никакого значения, но записывает JSON-ответ в http.ResponseWriter.
 func (h *Handler) GetAllTasks(w http.ResponseWriter, r *http.Request) {
 	const limit = 50
-	var tasks map[string][]models.Task
+	var tasks map[string][]task.Task
 	search := r.FormValue("search")
 	var isSearch bool = search != ""
 	var err error
