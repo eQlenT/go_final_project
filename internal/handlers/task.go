@@ -62,7 +62,7 @@ func (h *Handler) Task(w http.ResponseWriter, r *http.Request) {
 		var task models.Task
 		err := json.NewDecoder(r.Body).Decode(&task)
 		if err != nil {
-			err = fmt.Errorf("cat not parse response")
+			err = fmt.Errorf("can't parse response")
 			h.SendErr(w, err, http.StatusBadRequest)
 			return
 		}
@@ -80,6 +80,7 @@ func (h *Handler) Task(w http.ResponseWriter, r *http.Request) {
 			err = h.service.Store.CheckID(id)
 			if err != nil {
 				h.SendErr(w, err, http.StatusBadRequest)
+				return
 			}
 			task.Date, err = task.CheckDate(true)
 			if err != nil {
@@ -90,6 +91,7 @@ func (h *Handler) Task(w http.ResponseWriter, r *http.Request) {
 		err = h.service.Store.Update(&task)
 		if err != nil {
 			h.SendErr(w, err, http.StatusInternalServerError)
+			return
 		}
 		h.logger.Infof("sent response via handler Task (method %s)", r.Method)
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
