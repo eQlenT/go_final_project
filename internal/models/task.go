@@ -30,18 +30,23 @@ type Task struct {
 // Ошибка будет равна nil, если вычисление даты выполнено успешно.
 func (t *Task) CompleteRequest() (string, error) {
 	var nextDate string
+	now := time.Now().Format("20060102")
+	timeNow, _ := time.Parse("20060102", now)
 	// Если поле date не указано или содержит пустую строку, берётся сегодняшнее число.
 	if t.Date == "" || len(t.Date) == 0 {
 		t.Date = time.Now().Format("20060102")
 		return t.Date, nil
 	}
+	nextDate = t.Date
 	// Если дата меньше сегодняшнего числа, есть два варианта:
-	if date, err := time.Parse("20060102", t.Date); err == nil && date.Before(time.Now()) {
+	if date, err := time.Parse("20060102", t.Date); err == nil && date.Before(timeNow) {
 		// если правило повторения не указано или равно пустой строке, подставляется сегодняшнее число;
 		if t.Repeat == "" || len(t.Repeat) == 0 {
 			nextDate = time.Now().Format("20060102")
 			// при указанном правиле повторения вам нужно вычислить и записать в таблицу дату выполнения,
 			// которая будет больше сегодняшнего числа
+		} else if date.Equal(timeNow) {
+			return t.Date, nil
 		} else {
 			nextDate, err = utils.NextDate(time.Now(), t.Date, t.Repeat)
 			if err != nil {
@@ -51,6 +56,7 @@ func (t *Task) CompleteRequest() (string, error) {
 	} else if err == nil && time.Now().Before(date) {
 		return t.Date, nil
 	}
+
 	return nextDate, nil
 }
 
@@ -98,7 +104,7 @@ func (t Task) CheckTask() error {
 	return nil
 }
 
-func (t Task) CheckDate(isPut bool) (string, error) {
+func (t Task) CheckDate() (string, error) {
 	var date string
 	now, err := time.Parse("20060102", time.Now().Format("20060102"))
 	if err != nil {
@@ -111,7 +117,7 @@ func (t Task) CheckDate(isPut bool) (string, error) {
 	if t.Date == time.Now().Format("20060102") || now.Before(tmpDate) {
 		date = t.Date
 	}
-	if isPut && tmpDate.Before(time.Now()) && !now.Equal(tmpDate) {
+	if tmpDate.Before(time.Now()) && !now.Equal(tmpDate) {
 		return "", fmt.Errorf("date is less than today's date")
 	}
 	return date, nil
