@@ -19,15 +19,9 @@ type TaskService struct {
 // NewTaskService создает новый экземпляр TaskService.
 // Он принимает экземпляр TaskStore и экземпляр zap.SugaredLogger в качестве параметров.
 // Экземпляр TaskStore используется для взаимодействия с базовым хранилищем данных,
-// в то время как экземпляр zap.SugaredLogger используется для ведения журнала.
+// в то время как экземпляр zap.SugaredLogger используется для ведения лога.
 //
 // Функция возвращает указатель на новый экземпляр TaskService.
-func NewTaskService(store *store.TaskStore, logger *zap.SugaredLogger) *TaskService {
-	return &TaskService{
-		Store:  store,
-		logger: logger,
-	}
-}
 func NewTaskService(store *store.TaskStore, logger *zap.SugaredLogger) *TaskService {
 	return &TaskService{
 		Store:  store,
@@ -63,28 +57,18 @@ func (s *TaskService) Search(key string, limit int) (map[string][]task.Task, err
 	}
 	return tasks, nil
 }
-func (s *TaskService) Search(key string, limit int) (map[string][]task.Task, error) {
-	_, err := time.Parse("02.01.2006", key)
-	var tasks map[string][]task.Task
-	if err != nil {
-		tasks, err = s.Store.GetByWord(key, limit)
-		if err != nil {
-			s.logger.Error(err)
-			return nil, err
-		}
-	} else {
-		tasks, err = s.Store.GetByDate(key, limit)
-		if err != nil {
-			s.logger.Error(err)
-			return nil, err
-		}
-	}
-	if tasks["tasks"] == nil {
-		tasks["tasks"] = []task.Task{}
-	}
-	return tasks, nil
-}
 
+// Done помечает задачу как выполненную и выполняет дополнительные действия.
+// Если задача повторяется, она вычисляет дату следующего повторения и обновляет ее в хранилище.
+// Если дата следующего повторения совпадает с текущей датой, она вычисляет новую дату повторения
+// исходя из указанного интервала повторения и обновляет ее в хранилище.
+// Если задача не повторяется, она удаляется из хранилища.
+//
+// Параметры:
+// id - идентификатор задачи, которую необходимо пометить как выполненную.
+//
+// Возвращает:
+// error - возвращает ошибку, если она возникла во время выполнения операции, или nil, если операция выполнена успешно.
 func (s *TaskService) Done(id int) error {
 	task, err := s.Store.GetTask(id)
 	if err != nil {
