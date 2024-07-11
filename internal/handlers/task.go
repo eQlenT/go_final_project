@@ -62,6 +62,7 @@ func (h *Handler) Task(w http.ResponseWriter, r *http.Request) {
 		var task models.Task
 		err := json.NewDecoder(r.Body).Decode(&task)
 		if err != nil {
+			err = fmt.Errorf("cat not parse response")
 			h.SendErr(w, err, http.StatusBadRequest)
 			return
 		}
@@ -72,12 +73,18 @@ func (h *Handler) Task(w http.ResponseWriter, r *http.Request) {
 		} else {
 			id, err := strconv.Atoi(task.ID)
 			if err != nil {
+				err = fmt.Errorf("cat not parse id")
 				h.SendErr(w, err, http.StatusBadRequest)
 				return
 			}
 			err = h.service.Store.CheckID(id)
 			if err != nil {
 				h.SendErr(w, err, http.StatusBadRequest)
+			}
+			task.Date, err = task.CheckDate(true)
+			if err != nil {
+				h.SendErr(w, err, http.StatusBadRequest)
+				return
 			}
 		}
 		err = h.service.Store.Update(&task)
@@ -108,14 +115,12 @@ func (h *Handler) Task(w http.ResponseWriter, r *http.Request) {
 			h.SendErr(w, err, http.StatusBadRequest)
 			return
 		}
-		h.logger.Infof("1 var nextDate = %s)", nextDate)
 		request.Date = nextDate
 		if request.Date != "" {
-			nextDate, err = request.CheckDate()
+			nextDate, err = request.CheckDate(false)
 			if err != nil {
 				h.SendErr(w, err, http.StatusBadRequest)
 			}
-			h.logger.Infof("2 var nextDate = %s)", nextDate)
 			request.Date = nextDate
 		}
 		lastInsertID, err := h.service.Store.Insert(&request)
