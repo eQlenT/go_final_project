@@ -112,24 +112,19 @@ func (h *Handler) Task(w http.ResponseWriter, r *http.Request) {
 			h.SendErr(w, err, http.StatusBadRequest)
 			return
 		}
-		nextDate := request.Date
-		nextDate, err = request.CompleteRequest()
+		nextDate, err := request.CompleteRequest()
 		if err != nil {
 			h.SendErr(w, err, http.StatusBadRequest)
 			return
 		}
-		h.logger.Infof("1 date: %s", request.Date)
 		request.Date = nextDate
-		h.logger.Infof("2 date: %s", request.Date)
 		if request.Date != "" {
 			nextDate, err = request.CheckDate()
 			if err != nil {
 				h.SendErr(w, err, http.StatusBadRequest)
 			}
-			h.logger.Infof("3 date: %s", request.Date)
 			request.Date = nextDate
 		}
-		h.logger.Infof("final date: %s", request.Date)
 		lastInsertID, err := h.service.Store.Insert(&request)
 		if err != nil {
 			h.SendErr(w, err, http.StatusInternalServerError)
