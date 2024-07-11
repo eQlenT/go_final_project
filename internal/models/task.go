@@ -3,6 +3,7 @@ package models
 import (
 	"fmt"
 	"go_final_project/internal/utils"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -48,10 +49,7 @@ func (t *Task) CompleteRequest() (string, error) {
 			}
 		}
 	} else if err == nil && time.Now().Before(date) {
-		nextDate, err = utils.NextDate(time.Now(), t.Date, t.Repeat)
-		if err != nil {
-			return "", err
-		}
+		return t.Date, nil
 	}
 	return nextDate, nil
 }
@@ -71,13 +69,13 @@ func (t *Task) CompleteRequest() (string, error) {
 // - если поле даты не пустое и не соответствует формату "20060102", возвращается ошибка "неверный формат даты";
 // - если поле повторения не пустое и не соответствует определенным правилам, возвращается ошибка "неверный формат повторения".
 func (t Task) CheckTask() error {
-	// if t.ID != "" || len(t.ID) != 0 {
-	// 	_, err := strconv.Atoi(t.ID)
-	// 	if err != nil {
-	// 		err = fmt.Errorf("can not parse ID")
-	// 		return err
-	// 	}
-	// }
+	if t.ID != "" || len(t.ID) != 0 {
+		_, err := strconv.Atoi(t.ID)
+		if err != nil {
+			err = fmt.Errorf("can not parse ID")
+			return err
+		}
+	}
 	if len(t.Title) == 0 || t.Title == "" || t.Title == " " {
 		return fmt.Errorf("не указано название задачи")
 	}

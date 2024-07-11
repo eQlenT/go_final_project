@@ -108,12 +108,14 @@ func (h *Handler) Task(w http.ResponseWriter, r *http.Request) {
 			h.SendErr(w, err, http.StatusBadRequest)
 			return
 		}
+		h.logger.Infof("1 var nextDate = %s)", nextDate)
 		request.Date = nextDate
 		if request.Date != "" {
 			nextDate, err = request.CheckDate()
 			if err != nil {
 				h.SendErr(w, err, http.StatusBadRequest)
 			}
+			h.logger.Infof("2 var nextDate = %s)", nextDate)
 			request.Date = nextDate
 		}
 		lastInsertID, err := h.service.Store.Insert(&request)
