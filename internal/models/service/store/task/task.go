@@ -8,6 +8,8 @@ import (
 	"time"
 )
 
+// Структура Task содержит в себе идентификатор,
+// название, дату и правило повторения задачи.
 type Task struct {
 	ID      string `json:"id"`
 	Title   string `json:"title"`

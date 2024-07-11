@@ -16,6 +16,15 @@ type Handler struct {
 	mu      sync.Mutex
 }
 
+// NewHandler создает новый экземпляр обработчика с указанным сервисом и журналом.
+// Инициализирует новую структуру Handler с указанным сервисом, журналом и новым sync.Mutex.
+//
+// Параметры:
+// - service: Указатель на экземпляр TaskService, предоставляющий методы для управления задачами.
+// - logger: Указатель на экземпляр SugaredLogger, который используется для ведения журнала.
+//
+// Возвращает:
+// - Новый экземпляр обработчика.
 func NewHandler(service *service.TaskService, logger *zap.SugaredLogger) *Handler {
 	return &Handler{
 		service: service,
