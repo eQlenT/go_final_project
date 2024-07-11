@@ -6,14 +6,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"go_final_project/internal/utils"
 	"net/http"
 	"os"
 
 	"github.com/golang-jwt/jwt/v5"
 )
 
-func Authentication(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) Authentication(w http.ResponseWriter, r *http.Request) {
 	// Получаем пароль из переменной окружения
 	password := os.Getenv("TODO_PASSWORD")
 	var request struct {
@@ -21,7 +20,7 @@ func Authentication(w http.ResponseWriter, r *http.Request) {
 	}
 	err := json.NewDecoder(r.Body).Decode(&request)
 	if err != nil {
-		utils.SendErr(w, err, http.StatusBadRequest)
+		h.SendErr(w, err, http.StatusBadRequest)
 		return
 	}
 	var hashedPass string
@@ -30,7 +29,7 @@ func Authentication(w http.ResponseWriter, r *http.Request) {
 		hashedPass = hex.EncodeToString(hashString[:])
 	} else if password != request.Pass {
 		err := errors.New("password is incorrect")
-		utils.SendErr(w, err, http.StatusBadRequest)
+		h.SendErr(w, err, http.StatusBadRequest)
 		return
 	}
 	if len(password) > 0 {
@@ -46,7 +45,7 @@ func Authentication(w http.ResponseWriter, r *http.Request) {
 	signedToken, err := jwtToken.SignedString([]byte(password))
 	if err != nil {
 		err = fmt.Errorf("failed to sign jwt: %s", err)
-		utils.SendErr(w, err, http.StatusInternalServerError)
+		h.SendErr(w, err, http.StatusInternalServerError)
 		return
 	}
 
