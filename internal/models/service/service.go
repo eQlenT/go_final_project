@@ -1,14 +1,15 @@
 package service
 
 import (
-	"go_final_project/internal/models/service/store"
-	"go_final_project/internal/models/service/store/task"
-	"go_final_project/internal/ndate"
 	"strconv"
 	"strings"
 	"time"
 
 	"go.uber.org/zap"
+
+	"go_final_project/internal/models/service/store"
+	"go_final_project/internal/models/service/store/task"
+	"go_final_project/internal/ndate"
 )
 
 type TaskService struct {
@@ -29,6 +30,34 @@ func NewTaskService(store *store.TaskStore, logger *zap.SugaredLogger) *TaskServ
 	}
 }
 
+func (s *TaskService) Insert(task *task.Task) (int, error) {
+	id, err := s.Store.Insert(task)
+	if err != nil {
+		s.logger.Errorw("Error inserting task", "error", err)
+		return 0, err
+	}
+	s.logger.Infof("Task inserted with ID: %d", id)
+	return id, nil
+}
+
+func (s *TaskService) Delete(id int) error {
+	err := s.Store.Delete(id)
+	if err != nil {
+		s.logger.Errorw("Error deleting task", "error", err)
+		return err
+	}
+	s.logger.Infof("Task with ID: %d was deleted", id)
+	return nil
+}
+
+func (s *TaskService) GetTask(id int) (*task.Task, error) {
+	return s.Store.GetTask(id)
+}
+
+func (s *TaskService) Update(task *task.Task) error {
+	return s.Store.Update(task)
+}
+
 // Search ищет задачи по указанному ключу (слово или дата).
 // Сначала он пытается разобрать ключ как дату с использованием формата "02.01.2006".
 // Если это успешно, он вызывает метод GetByDate хранилища Task для получения задач по дате.
@@ -37,7 +66,8 @@ func NewTaskService(store *store.TaskStore, logger *zap.SugaredLogger) *TaskServ
 // Если ключ "tasks" в возвращенном словаре равен nil, он инициализирует его пустым массивом Task.
 // Наконец, он возвращает словарь задач и nil.
 func (s *TaskService) Search(key string, limit int) (map[string][]task.Task, error) {
-	_, err := time.Parse("02.01.2006", key)
+	const srchFormat = "02.01.2006"
+	_, err := time.Parse(srchFormat, key)
 	var tasks map[string][]task.Task
 	if err != nil {
 		tasks, err = s.Store.GetByWord(key, limit)
@@ -70,6 +100,7 @@ func (s *TaskService) Search(key string, limit int) (map[string][]task.Task, err
 // Возвращает:
 // error - возвращает ошибку, если она возникла во время выполнения операции, или nil, если операция выполнена успешно.
 func (s *TaskService) Done(id int) error {
+	const dateFormat = "20060102"
 	task, err := s.Store.GetTask(id)
 	if err != nil {
 		s.logger.Error(err)
@@ -81,15 +112,15 @@ func (s *TaskService) Done(id int) error {
 			s.logger.Error(err)
 			return err
 		}
-		if task.Date == time.Now().Format("20060102") {
-			date, err := time.Parse("20060102", task.Date)
+		if task.Date == time.Now().Format(dateFormat) {
+			date, err := time.Parse(dateFormat, task.Date)
 			if err != nil {
 				s.logger.Error(err)
 				return err
 			}
 			rptSlc := strings.Split(task.Repeat, " ")
 			subDays, err := strconv.Atoi(rptSlc[1])
-			task.Date = date.AddDate(0, 0, subDays).Format("20060102")
+			task.Date = date.AddDate(0, 0, subDays).Format(dateFormat)
 			if err != nil {
 				s.logger.Error(err)
 				return err
@@ -108,4 +139,8 @@ func (s *TaskService) Done(id int) error {
 		s.logger.Infof("Task `%s` done and deleted", task.Title)
 	}
 	return nil
+}
+
+func (s *TaskService) CheckID(id int) error {
+	return s.Store.CheckID(id)
 }

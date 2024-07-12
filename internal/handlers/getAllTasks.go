@@ -8,10 +8,11 @@ package handlers
 
 import (
 	"encoding/json"
-	"go_final_project/internal/models/service/store/task"
 	"net/http"
 
 	_ "modernc.org/sqlite"
+
+	"go_final_project/internal/models/service/store/task"
 )
 
 // GetTasks - обработчик для GET-запросов к /api/tasks.
@@ -53,5 +54,8 @@ func (h *Handler) GetAllTasks(w http.ResponseWriter, r *http.Request) {
 	}
 	h.logger.Infof("sent response via handler GetTasks")
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.Write(response)
+	_, err = w.Write(response)
+	if err != nil {
+		h.logger.Error(err)
+	}
 }

@@ -4,8 +4,9 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"go_final_project/internal/models/service/store/task"
 	"time"
+
+	"go_final_project/internal/models/service/store/task"
 )
 
 // Структура TaskStore отвечает за взаимодействие с базой данных для выполнения операций CRUD
@@ -23,8 +24,7 @@ type TaskStore struct {
 // Параметр db используется для установления соединения с базой данных. Предполагается, что база данных уже создана
 // и доступна через предоставленный экземпляр sql.DB.
 func NewTaskStore(db *sql.DB) *TaskStore {
-	return &TaskStore{
-		db: db}
+	return &TaskStore{db: db}
 }
 
 // InitDB инициализирует базу данных путем создания таблицы "scheduler" и индекса на столбце "date".
@@ -36,7 +36,7 @@ func NewTaskStore(db *sql.DB) *TaskStore {
 // - repeat: поле переменной длины строки с максимальной длиной 128 символов, не может быть NULL, имеет значение по умолчанию пустая строка
 //
 // Если во время выполнения SQL-запросов возникает ошибка, она будет выведена в консоль.
-func (s *TaskStore) InitDB() {
+func (s *TaskStore) InitDB() error {
 	const (
 		CreateTableQuery = `CREATE TABLE scheduler (
 		id      INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -47,14 +47,13 @@ func (s *TaskStore) InitDB() {
 		);`
 	)
 	if _, err := s.db.Exec(CreateTableQuery); err != nil {
-		fmt.Println(err)
+		return err
 	}
 
 	if _, err := s.db.Exec(`CREATE INDEX taks_date ON scheduler (date);`); err != nil {
-		fmt.Println(err)
-
+		return err
 	}
-
+	return nil
 }
 
 // CheckID проверяет, существует ли указанный идентификатор в базе данных.
@@ -171,6 +170,9 @@ func (s *TaskStore) GetAll(limit int) (map[string][]task.Task, error) {
 		}
 		tasks["tasks"] = append(tasks["tasks"], task)
 	}
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
 	if tasks["tasks"] == nil {
 		tasks["tasks"] = []task.Task{}
 	}
@@ -197,14 +199,14 @@ func (s *TaskStore) GetTask(id int) (*task.Task, error) {
 	for rows.Next() {
 		err = rows.Scan(&task.ID, &task.Date, &task.Title, &task.Comment, &task.Repeat)
 		if err != nil {
-			return &task, err
+			return nil, err
 		}
 	}
 	if err = rows.Err(); err != nil {
-		return &task, err
+		return nil, err
 	}
 	if task.Date == "" && task.Title == "" && task.Repeat == "" && task.Comment == "" {
-		return &task, fmt.Errorf("no rows for id %d", id)
+		return nil, fmt.Errorf("no rows for id %d", id)
 	}
 	return &task, nil
 }

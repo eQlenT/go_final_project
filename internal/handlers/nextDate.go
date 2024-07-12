@@ -2,9 +2,10 @@ package handlers
 
 import (
 	"fmt"
-	"go_final_project/internal/ndate"
 	"net/http"
 	"time"
+
+	"go_final_project/internal/ndate"
 )
 
 // NextDate - это обработчик HTTP-запросов, который вычисляет следующую дату на основе указанных параметров.
@@ -17,8 +18,6 @@ import (
 // Если входные параметры недействительны или при вычислении возникает ошибка, функция возвращает ответ HTTP 400 Bad Request.
 // В противном случае она устанавливает заголовок "Content-Type" в "text/plain" и выводит результат в формате "%s\n".
 func (h *Handler) NextDate(w http.ResponseWriter, r *http.Request) {
-	h.logger.Infof("next date enter")
-
 	if r == nil {
 		err := fmt.Errorf("request is nil")
 		h.SendErr(w, err, http.StatusBadRequest)
@@ -46,7 +45,7 @@ func (h *Handler) NextDate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.logger.Infof("next date updated")
+	h.logger.Infof("sent response via handler NextDate")
 	w.Header().Set("Content-Type", "text/plain")
 	fmt.Fprintf(w, "%s\n", next)
 }
