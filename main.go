@@ -7,6 +7,7 @@ import (
 	"go_final_project/internal/handlers"
 	"go_final_project/internal/models/service"
 	"go_final_project/internal/models/service/store"
+	mid "go_final_project/middleware"
 	"log"
 	"net/http"
 
@@ -48,9 +49,9 @@ func main() {
 	http.Handle("/", http.FileServer(http.Dir(webDir)))
 	http.HandleFunc("/api/signin", handler.Authentication)
 	http.HandleFunc("/api/nextdate", handler.NextDate)
-	http.HandleFunc("/api/task", handler.Task)
-	http.HandleFunc("/api/tasks", handler.GetAllTasks)
-	http.HandleFunc("/api/task/done", handler.TaskDone)
+	http.HandleFunc("/api/task", mid.Auth(handler.Task))
+	http.HandleFunc("/api/tasks", mid.Auth(handler.GetAllTasks))
+	http.HandleFunc("/api/task/done", mid.Auth(handler.TaskDone))
 
 	// Запускаем сервер и прослушиваем входящие подключения
 	sugar.Infof("Server started at %s", url)
