@@ -16,7 +16,7 @@ import (
 // path (string): Путь к файлу базы данных SQLite.
 // install (bool): Флаг, указывающий, что базу данных необходимо установить.
 func CheckDB() (string, bool) {
-
+	const defaultPath = ""scheduler.db
 	// Получение пути к файлу базы данных SQLite из переменной окружения TODO_DBFILE.
 	// Если переменная окружения не установлена, используется имя файла базы данных по умолчанию "scheduler.db".
 	path := os.Getenv("TODO_DBFILE")

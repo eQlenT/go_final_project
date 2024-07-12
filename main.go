@@ -3,15 +3,15 @@ package main
 import (
 	"database/sql"
 	"fmt"
-	"go_final_project/internal/checkers"
-	"go_final_project/internal/handlers"
-	"go_final_project/internal/models/service"
-	"go_final_project/internal/models/service/store"
-	"log"
 	"net/http"
 
 	"go.uber.org/zap"
 	_ "modernc.org/sqlite"
+
+	"go_final_project/internal/checkers"
+	"go_final_project/internal/handlers"
+	"go_final_project/internal/models/service"
+	"go_final_project/internal/models/service/store"
 )
 
 // main является точкой входа в приложение. Она инициализирует сервер, настраивает маршрутизацию,
@@ -29,12 +29,13 @@ func main() {
 	// Открываем подключение к базе данных
 	db, err := sql.Open("sqlite", path)
 	if err != nil {
-		log.Fatal(err)
+		sugar.Fatal(err)
 	}
 	defer db.Close()
 	store := store.NewTaskStore(db)
 	if install {
-		store.InitDB()
+		err = store.InitDB()
+		sugar.Error(err)
 	}
 	service := service.NewTaskService(store, sugar)
 	handler := handlers.NewHandler(service, sugar)

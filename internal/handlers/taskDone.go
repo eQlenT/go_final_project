@@ -17,11 +17,9 @@ import (
 // - Записывает JSON-ответ с пустым объектом в ответный writer.
 // - Если во время процесса возникает ошибка, он отправляет ответ с ошибкой с соответствующим кодом состояния.
 func (h *Handler) TaskDone(w http.ResponseWriter, r *http.Request) {
-	h.mu.Lock()
-	defer h.mu.Unlock()
 	if r.Method != http.MethodPost {
 		err := errors.New("request method must be post")
-		h.SendErr(w, err, http.StatusInternalServerError)
+		h.SendErr(w, err, http.StatusMethodNotAllowed)
 		return
 	}
 	id, err := h.GetID(r)

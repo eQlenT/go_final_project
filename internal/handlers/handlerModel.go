@@ -2,18 +2,17 @@ package handlers
 
 import (
 	"fmt"
-	"go_final_project/internal/models/service"
 	"net/http"
 	"strconv"
-	"sync"
 
 	"go.uber.org/zap"
+
+	"go_final_project/internal/models/service"
 )
 
 type Handler struct {
 	service *service.TaskService
 	logger  *zap.SugaredLogger
-	mu      sync.Mutex
 }
 
 // NewHandler создает новый экземпляр обработчика с указанным сервисом и журналом.
@@ -29,7 +28,6 @@ func NewHandler(service *service.TaskService, logger *zap.SugaredLogger) *Handle
 	return &Handler{
 		service: service,
 		logger:  logger,
-		mu:      sync.Mutex{},
 	}
 }
 
