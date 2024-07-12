@@ -7,12 +7,9 @@
 package handlers
 
 import (
-	"database/sql"
 	"encoding/json"
-	"go_final_project/internal/models"
-	"go_final_project/internal/utils"
+	"go_final_project/internal/models/service/store/task"
 	"net/http"
-	"time"
 
 	_ "modernc.org/sqlite"
 )
@@ -29,72 +26,32 @@ import (
 //
 // Возвращает:
 // // - Функция не возвращает никакого значения, но записывает JSON-ответ в http.ResponseWriter.
-func (c *DBConnection) GetTasks(w http.ResponseWriter, r *http.Request) {
-	c.Mu.Lock()
-	defer c.Mu.Unlock()
+func (h *Handler) GetAllTasks(w http.ResponseWriter, r *http.Request) {
 	const limit = 50
-	tasks := make(map[string][]models.Task)
+	var tasks map[string][]task.Task
 	search := r.FormValue("search")
-	isSearch := search != ""
-	var rows *sql.Rows
+	var isSearch bool = search != ""
+	var err error
 	if isSearch {
-		_, err := time.Parse("02.01.2006", search)
+		tasks, err = h.service.Search(search, limit)
 		if err != nil {
-			rows, err = c.DB.Query(`SELECT id, date, title, comment, repeat FROM scheduler
-	WHERE title LIKE :search OR comment LIKE :search ORDER BY date LIMIT :limit`,
-				sql.Named("search", "%"+search+"%"),
-				sql.Named("limit", limit))
-			if err != nil {
-				utils.SendErr(w, err, http.StatusInternalServerError)
-			}
-		} else {
-			date, _ := time.Parse("02.01.2006", search)
-			dateFormat := date.Format("20060102")
-			rows, err = c.DB.Query(`SELECT id, date, title, comment, repeat FROM scheduler
-		WHERE date = :date LIMIT :limit`,
-				sql.Named("date", dateFormat),
-				sql.Named("limit", limit))
-			if err != nil {
-				utils.SendErr(w, err, http.StatusInternalServerError)
-			}
+			h.SendErr(w, err, http.StatusInternalServerError)
+			return
 		}
 	} else {
 		var err error
-		rows, err = c.DB.Query(`SELECT id, date, title, comment, repeat FROM scheduler
-	ORDER BY date LIMIT :limit`,
-			sql.Named("limit", limit))
+		tasks, err = h.service.Store.GetAll(limit)
 		if err != nil {
-			utils.SendErr(w, err, http.StatusInternalServerError)
+			h.SendErr(w, err, http.StatusInternalServerError)
 			return
 		}
 	}
-	defer rows.Close()
-
-	for rows.Next() {
-		task := models.Task{}
-		err := rows.Scan(&task.ID, &task.Date, &task.Title, &task.Comment, &task.Repeat)
-		if err != nil {
-			utils.SendErr(w, err, http.StatusInternalServerError)
-			return
-		}
-
-		tasks["tasks"] = append(tasks["tasks"], task)
-	}
-	if err := rows.Err(); err != nil {
-		utils.SendErr(w, err, http.StatusInternalServerError)
-		return
-	}
-	// Если задач нет, возвращаем пустой json.
-	if tasks["tasks"] == nil {
-		tasks["tasks"] = []models.Task{}
-	}
-
 	response, err := json.Marshal(tasks)
 	if err != nil {
-		utils.SendErr(w, err, http.StatusInternalServerError)
+		h.SendErr(w, err, http.StatusInternalServerError)
 		return
 	}
-
+	h.logger.Infof("sent response via handler GetTasks")
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.Write(response)
 }
