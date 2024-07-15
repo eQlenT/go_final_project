@@ -47,5 +47,8 @@ func (h *Handler) NextDate(w http.ResponseWriter, r *http.Request) {
 
 	h.logger.Infof("sent response via handler NextDate")
 	w.Header().Set("Content-Type", "text/plain")
-	fmt.Fprintf(w, "%s\n", next)
+	_, err = w.Write([]byte(next))
+	if err != nil {
+		h.logger.Error(err)
+	}
 }

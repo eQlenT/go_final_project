@@ -50,5 +50,8 @@ func (h *Handler) Authentication(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	fmt.Fprintf(w, `{"token": "%s"}`, signedToken)
+	_, err = fmt.Fprintf(w, `{"token": "%s"}`, signedToken)
+	if err != nil {
+		h.logger.Error(err)
+	}
 }

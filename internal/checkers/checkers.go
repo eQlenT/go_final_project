@@ -9,6 +9,11 @@ import (
 	_ "modernc.org/sqlite"
 )
 
+const (
+	defaultPath = "scheduler.db"
+	defaultPort = "7540"
+)
+
 // CheckDB проверяет, существует ли файл базы данных SQLite и возвращает его путь.
 // Если файла не существует, возвращается имя файла базы данных по умолчанию и флаг, указывающий, что базу данных необходимо установить.
 //
@@ -16,12 +21,11 @@ import (
 // path (string): Путь к файлу базы данных SQLite.
 // install (bool): Флаг, указывающий, что базу данных необходимо установить.
 func CheckDB() (string, bool) {
-	const defaultPath = ""scheduler.db
 	// Получение пути к файлу базы данных SQLite из переменной окружения TODO_DBFILE.
 	// Если переменная окружения не установлена, используется имя файла базы данных по умолчанию "scheduler.db".
 	path := os.Getenv("TODO_DBFILE")
 	if path == "" {
-		path = "scheduler.db"
+		path = defaultPath
 	}
 
 	// Получение абсолютного пути к файлу базы данных SQLite путем объединения каталога исполняемого файла с именем файла базы данных.
@@ -51,7 +55,7 @@ func CheckDB() (string, bool) {
 func CheckPort() string {
 	port := os.Getenv("TODO_PORT")
 	if port == "" {
-		port = "7540"
+		port = defaultPort
 	}
 	return port
 }

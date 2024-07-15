@@ -49,7 +49,6 @@ func (h *Handler) EditTask(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	_, err = w.Write([]byte("{}"))
 	if err != nil {
-		h.SendErr(w, err, http.StatusInternalServerError)
-		return
+		h.logger.Error(err)
 	}
 }

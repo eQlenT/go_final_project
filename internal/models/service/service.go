@@ -144,3 +144,19 @@ func (s *TaskService) Done(id int) error {
 func (s *TaskService) CheckID(id int) error {
 	return s.Store.CheckID(id)
 }
+
+func (s *TaskService) DateToAdd(task *task.Task) error {
+	nextDate, err := task.CompleteRequest()
+	if err != nil {
+		return err
+	}
+	task.Date = nextDate
+	if task.Date != "" {
+		nextDate, err = task.CheckDate()
+		if err != nil {
+			return err
+		}
+		task.Date = nextDate
+	}
+	return nil
+}
