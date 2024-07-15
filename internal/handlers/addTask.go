@@ -23,20 +23,24 @@ func (h *Handler) AddTask(w http.ResponseWriter, r *http.Request) {
 		h.SendErr(w, err, http.StatusBadRequest)
 		return
 	}
-	nextDate, err := request.CompleteRequest()
+	// nextDate, err := request.CompleteRequest()
+	// if err != nil {
+	// 	h.SendErr(w, err, http.StatusBadRequest)
+	// 	return
+	// }
+	// request.Date = nextDate
+	// if request.Date != "" {
+	// 	nextDate, err = request.CheckDate()
+	// 	if err != nil {
+	// 		h.SendErr(w, err, http.StatusBadRequest)
+	// 	}
+	// 	request.Date = nextDate
+	// }
+	err = h.service.DateToAdd(&request)
 	if err != nil {
-		h.SendErr(w, err, http.StatusBadRequest)
+		h.SendErr(w, err, http.StatusInternalServerError)
 		return
 	}
-	request.Date = nextDate
-	if request.Date != "" {
-		nextDate, err = request.CheckDate()
-		if err != nil {
-			h.SendErr(w, err, http.StatusBadRequest)
-		}
-		request.Date = nextDate
-	}
-	// TODO: CHANGE TO SERVICE METHOD
 	lastInsertID, err := h.service.Insert(&request)
 	if err != nil {
 		h.SendErr(w, err, http.StatusInternalServerError)
@@ -52,7 +56,6 @@ func (h *Handler) AddTask(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	_, err = w.Write(response)
 	if err != nil {
-		h.SendErr(w, err, http.StatusInternalServerError)
-		return
+		h.logger.Error(err)
 	}
 }

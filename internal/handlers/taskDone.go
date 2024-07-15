@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 )
 
@@ -28,5 +27,8 @@ func (h *Handler) TaskDone(w http.ResponseWriter, r *http.Request) {
 	}
 	h.service.Done(id)
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	fmt.Fprint(w, "{}")
+	_, err = w.Write([]byte("{}"))
+	if err != nil {
+		h.logger.Error(err)
+	}
 }

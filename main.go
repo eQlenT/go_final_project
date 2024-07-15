@@ -35,7 +35,9 @@ func main() {
 	store := store.NewTaskStore(db)
 	if install {
 		err = store.InitDB()
-		sugar.Error(err)
+		if err != nil {
+			sugar.Error(err)
+		}
 	}
 	service := service.NewTaskService(store, sugar)
 	handler := handlers.NewHandler(service, sugar)

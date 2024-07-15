@@ -8,7 +8,6 @@ func (h *Handler) DeleteTask(w http.ResponseWriter, r *http.Request) {
 		h.SendErr(w, err, http.StatusBadRequest)
 		return
 	}
-	// TODO: CHANGE TO SERVICE METHOD
 	err = h.service.CheckID(id)
 	if err != nil {
 		h.SendErr(w, err, http.StatusBadRequest)
@@ -23,7 +22,6 @@ func (h *Handler) DeleteTask(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	_, err = w.Write([]byte("{}"))
 	if err != nil {
-		h.SendErr(w, err, http.StatusInternalServerError)
-		return
+		h.logger.Error(err)
 	}
 }
